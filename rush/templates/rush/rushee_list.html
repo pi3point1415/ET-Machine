@@ -1,0 +1,63 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>Rushee List</h1>
+
+    {% if rushee_list %}
+        <table class="table-fancy">
+            <tr>
+                <th style="text-align: left">Rushee</th>
+                <th>Bid Status</th>
+                <th>Bidder</th>
+                <th>Dorm</th>
+                <th>Email</th>
+                <th>Discord</th>
+                <th>Phone</th>
+                {% if user.is_staff %}
+                    <th>
+                        Filing Status
+                    </th>
+                {% endif %}
+            </tr>
+            {% for rushee in rushee_list %}
+                <tr>
+                    <td style="text-align: left">
+                        <a href="{{ rushee.get_absolute_url }}">{{ rushee }}</a>
+                    </td>
+                    <td>{{ rushee.get_status_display }}</td>
+                    <td>{{ rushee.bidder|upper }}</td>
+                    <td>{{ rushee.dorm }}</td>
+                    <td>{{ rushee.email }}</td>
+                    <td>{{ rushee.discord }}</td>
+                    <td>{{ rushee.phone }}</td>
+                    {% if user.is_staff %}
+                        <td{% if user.is_staff %}
+                            {% if rushee.autobid %}
+                                class="text-success"
+                            {% elif rushee.flush %}
+                                class="text-danger"
+                            {% elif rushee.weak %}
+                                class="text-warning"
+                            {% endif %}
+                        {% endif %} >
+                            ({{ rushee.short_filings_desc }})
+                        </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </table>
+
+    {% else %}
+        <p>There are no rushees in the system.</p>
+    {% endif %}
+    <form action="" method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {{ form.rushees.errors }}
+        {{ form.rushees.label_tag }}
+        <br/>
+        {{ form.rushees }}
+        <br/>
+        <input type="submit" value="Submit">
+    </form>
+{% endblock %}

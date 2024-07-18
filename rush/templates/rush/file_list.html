@@ -1,0 +1,40 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>File on a Rushee</h1>
+
+    {% if list %}
+        <dl>
+            {% for rushee, form in list %}
+                <dt
+                        {% if user.is_staff %}
+                            {% if rushee.autobid %}
+                                class="text-success"
+                            {% elif rushee.flush %}
+                                class="text-danger"
+                            {% elif rushee.weak %}
+                                class="text-warning"
+                            {% endif %}
+                        {% endif %}>
+                    <a href="{{ rushee.get_absolute_url }}">{{ rushee }}</a>
+                    {% if user.is_staff %}
+                        ({{ rushee.short_filings_desc }})
+                    {% endif %}
+                </dt>
+                <dd>
+                    <form action="" method="post">
+                        {{ formset.management_form }}
+                        {% csrf_token %}
+                        <table>
+                            {{ form.as_table }}
+                        </table>
+                        <input type="submit" value="Submit">
+                    </form>
+                </dd>
+            {% endfor %}
+        </dl>
+
+    {% else %}
+        <p>There are no rushees in the system.</p>
+    {% endif %}
+{% endblock %}

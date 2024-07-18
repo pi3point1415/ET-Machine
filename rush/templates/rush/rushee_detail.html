@@ -1,0 +1,79 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>{{ rushee }}</h1>
+
+    {% if user.is_staff %}
+        <p><strong>{{ rushee.long_filings_desc }}</strong></p>
+        {% if rushee.flush %}
+            <p class="text-danger">{{ rushee }} has a flush filing</p>
+        {% elif rushee.weak %}
+            <p class="text-warning">{{ rushee }} has a weak filing</p>
+        {% else %}
+            <p{% if rushee.autobid %} class="text-success"{% endif %}>
+            {{ rushee }} has {% if rushee.autobid %}{% else %}not {% endif %}met autobid conditions.
+        {% endif %}
+    </p>
+    {% else %}
+        <p><strong>Status:</strong> {{ rushee.get_status_display }}</p>
+        {% if rushee.status == 'a' %}
+            <p><strong>Bidder:</strong> {{ rushee.bidder|upper }}</p>
+        {% endif %}
+    {% endif %}
+    {% if user.is_staff %}
+
+        <form action="" method="post">
+            {% csrf_token %}
+            <table>
+                {{ modify_form.as_table }}
+            </table>
+        <input type="submit" value="Update" name="update">
+        </form>
+        <br/>
+        <strong>Filings:</strong>
+        <ul>
+            {% for filing in rushee.filing_set.all %}
+                <li> {{ filing.active }}: {{ filing.get_type_display }}</li>
+            {% empty %}
+                <li> no filings</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <ul style="list-style-type:none; padding-left: 0;">
+            <li><strong>Dorm:</strong> {{ rushee.dorm }}</li>
+            <li><strong>Email:</strong> {{ rushee.email }}</li>
+            <li><strong>Discord:</strong> {{ rushee.discord }}</li>
+            <li><strong>Phone:</strong> {{ rushee.phone }}</li>
+            <li><strong>Comments:</strong> {{ rushee.comments }}</li>
+        </ul>
+    {% endif %}
+    <p>My filing: {{ active_file }}</p>
+
+    <form action="" method="post">
+        {% csrf_token %}
+        <table>
+            {{ file_form.as_table }}
+        </table>
+        <input type="submit" value="Submit" name="file">
+    </form>
+
+    {% if user.is_staff %}
+        <br/>
+        <p><strong>Delete</strong></p>
+        <form action="" method="POST">
+    {% csrf_token %}
+    <table>
+        <tr>
+            <td style="padding-right: 10px">Delete All Filings: </td>
+            <td>{{ delete_form.filings }}</td>
+        </tr>
+        <tr>
+            <td>Delete Rushee: </td>
+            <td>{{ delete_form.rushees }}</td>
+        </tr>
+    </table>
+    <input type="submit" value="Delete" name="delete">
+    </form>
+    {% endif %}
+
+{% endblock %}

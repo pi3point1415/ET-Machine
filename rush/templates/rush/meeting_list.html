@@ -1,0 +1,36 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <table class="table-fancy">
+        <tr>
+        <th>Name</th>
+            <th>Status</th>
+            <th style="border-left: 1px solid;">B</th>
+            <th>N</th>
+            <th>W</th>
+            <th>F</th>
+            <th style="border-right: 1px solid;">Total</th>
+            {% for active in actives %}
+                <th style="line-height: 1">
+                {% for i in active %}
+                    {{ i }} <br>
+                {% endfor %}
+                </th>
+            {% endfor %}
+        </tr>
+        {% for rushee, row in rushees %}
+            <tr>
+                <td>{{ rushee }}</td>
+                <td>{{ rushee.get_status_display }}</td>
+                <td style="border-left: 1px solid;">{{ rushee.b }}</td>
+                <td>{{ rushee.n }}</td>
+                <td>{{ rushee.w }}</td>
+                <td>{{ rushee.f }}</td>
+                <td style="border-right: 1px solid;">{{ rushee.filings }}</td>
+                {% for i in row %}
+                    <td>{{ i|upper }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

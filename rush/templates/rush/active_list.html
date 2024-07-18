@@ -1,0 +1,31 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>Actives List</h1>
+
+    <form action="" method="post">
+        {% csrf_token %}
+        <table class="table-fancy">
+            <tr>
+                <th>Active</th>
+                <th>Rush Chair</th>
+                <th>Delete</th>
+                <th>Reset Password</th>
+            </tr>
+            <tr>
+                {% for field in modify_actives_form %}
+                    {% cycle '<td>' '' '' %}{% cycle field.label_tag '' '' %}{% cycle '</td>' '' '' %}
+                    <td>{{ field }}{{ modify_actives_form.field.errors }}</td>
+                    {% if not forloop.last %}{% cycle '' '' '</tr><tr>' %}{% endif %}
+                {% endfor %}
+            </tr>
+        </table>
+        {{ new_actives_form.non_field_errors }}
+        {{ new_actives_form.actives.errors }}
+        {{ new_actives_form.actives.label_tag }}
+        <br/>
+        {{ new_actives_form.actives }}
+        <br/>
+        <input type="submit" value="Submit">
+    </form>
+{% endblock %}

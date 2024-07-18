@@ -1,0 +1,50 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <p><strong>Autobid conditions:</strong></p>
+    <form action="" method="POST">
+    {% csrf_token %}
+    <table>
+        <tr>
+            <td>At least</td>
+            <td>{{ settings_form.b }}</td>
+            <td>bids</td>
+        </tr>
+        <tr>
+            <td>At least</td>
+            <td>{{ settings_form.n }}</td>
+            <td>positive filings</td>
+        </tr>
+        <tr>
+            <td>At most</td>
+            <td>{{ settings_form.w }}</td>
+            <td>weak filings</td>
+        </tr>
+        <tr>
+            <td>At most</td>
+            <td>{{ settings_form.f }}</td>
+            <td>flush filings</td>
+        </tr>
+    </table>
+    <input type="submit" value="Update">
+    </form>
+    <br/>
+    <p><strong>Export</strong></p>
+    <p><a href="{% url 'export' %}">Export rushee data to CSV</a></p>
+    <p><strong>Delete</strong></p>
+    <p>Note that deleting rushees will also delete filings</p>
+    <form action="" method="POST">
+    {% csrf_token %}
+    <table>
+        <tr>
+            <td>Delete All Filings: </td>
+            <td>{{ delete_form.filings }}</td>
+        </tr>
+        <tr>
+            <td style="padding-right: 10px">Delete All Rushees: </td>
+            <td>{{ delete_form.rushees }}</td>
+        </tr>
+    </table>
+    <input type="submit" value="Delete">
+    </form>
+{% endblock %}
