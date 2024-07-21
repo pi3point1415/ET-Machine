@@ -1,5 +1,16 @@
 {% extends "base_generic.html" %}
 
+{% block head %}
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.3/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.js"></script>
+    <script>
+        $(function () {
+            $("#id_last_contact").datepicker();
+        });
+    </script>
+{% endblock %}
+
 {% block content %}
     <h1>{{ rushee }}</h1>
 
@@ -20,33 +31,23 @@
             <p><strong>Bidder:</strong> {{ rushee.bidder|upper }}</p>
         {% endif %}
     {% endif %}
-    {% if user.is_staff %}
 
-        <form action="" method="post">
-            {% csrf_token %}
-            <table>
-                {{ modify_form.as_table }}
-            </table>
+    <form action="" method="post">
+        {% csrf_token %}
+        <table>
+            {{ modify_form.as_table }}
+        </table>
         <input type="submit" value="Update" name="update">
-        </form>
-        <br/>
-        <strong>Filings:</strong>
-        <ul>
-            {% for filing in rushee.filing_set.all %}
-                <li> {{ filing.active }}: {{ filing.get_type_display }}</li>
-            {% empty %}
-                <li> no filings</li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <ul style="list-style-type:none; padding-left: 0;">
-            <li><strong>Dorm:</strong> {{ rushee.dorm }}</li>
-            <li><strong>Email:</strong> {{ rushee.email }}</li>
-            <li><strong>Discord:</strong> {{ rushee.discord }}</li>
-            <li><strong>Phone:</strong> {{ rushee.phone }}</li>
-            <li><strong>Comments:</strong> {{ rushee.comments }}</li>
-        </ul>
-    {% endif %}
+    </form>
+    <br/>
+    <strong>Filings:</strong>
+    <ul>
+        {% for filing in rushee.filing_set.all %}
+            <li> {{ filing.active }}: {{ filing.get_type_display }}</li>
+        {% empty %}
+            <li> no filings</li>
+        {% endfor %}
+    </ul>
     <p>My filing: {{ active_file }}</p>
 
     <form action="" method="post">
@@ -61,19 +62,19 @@
         <br/>
         <p><strong>Delete</strong></p>
         <form action="" method="POST">
-    {% csrf_token %}
-    <table>
-        <tr>
-            <td style="padding-right: 10px">Delete All Filings: </td>
-            <td>{{ delete_form.filings }}</td>
-        </tr>
-        <tr>
-            <td>Delete Rushee: </td>
-            <td>{{ delete_form.rushees }}</td>
-        </tr>
-    </table>
-    <input type="submit" value="Delete" name="delete">
-    </form>
+            {% csrf_token %}
+            <table>
+                <tr>
+                    <td style="padding-right: 10px">Delete All Filings:</td>
+                    <td>{{ delete_form.filings }}</td>
+                </tr>
+                <tr>
+                    <td>Delete Rushee:</td>
+                    <td>{{ delete_form.rushees }}</td>
+                </tr>
+            </table>
+            <input type="submit" value="Delete" name="delete">
+        </form>
     {% endif %}
 
 {% endblock %}

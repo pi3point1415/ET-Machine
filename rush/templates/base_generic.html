@@ -10,6 +10,7 @@
     <!-- Add additional CSS in static file -->
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    {% block head %}{% endblock %}
 </head>
 <body>
 
@@ -30,6 +31,8 @@
                 <ul class="sidebar-nav">
                     <li><a href="{% url 'active-list' %}">Actives</a></li>
                     <li><a href="{% url 'meeting-list' %}">Meeting List</a></li>
+                    <li><a href="{% url 'file-as' %}">File as User</a></li>
+                    <li><a href="{% url 'merge' %}">Merge Rushees</a></li>
                     <li><a href="{% url 'settings' %}">Rush Settings</a></li>
                 </ul>
                 {% endif %}

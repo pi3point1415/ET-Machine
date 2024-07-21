@@ -1,0 +1,14 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <p>The filings from the second rushee will be added to the first rushee and the second rushee will be deleted.</p>
+    <p>If anyone has filed on both rushees, the filing for the first rushee will be preserved.</p>
+    <form action="" method="post">
+        {% csrf_token %}
+        <table>
+            {{ form.as_table }}
+        </table>
+        <input type="submit" value="Submit">
+    </form>
+
+{% endblock %}

@@ -13,6 +13,7 @@
                 <th>Email</th>
                 <th>Discord</th>
                 <th>Phone</th>
+                <th>Last Contact</th>
                 {% if user.is_staff %}
                     <th>
                         Filing Status
@@ -30,6 +31,7 @@
                     <td>{{ rushee.email }}</td>
                     <td>{{ rushee.discord }}</td>
                     <td>{{ rushee.phone }}</td>
+                    <td>{{ rushee.last_contact }}</td>
                     {% if user.is_staff %}
                         <td{% if user.is_staff %}
                             {% if rushee.autobid %}

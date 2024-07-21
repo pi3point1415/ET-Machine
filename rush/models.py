@@ -19,6 +19,7 @@ class Rushee(models.Model):
     phone = models.CharField(max_length=20, null=True, blank=True)
     status = models.CharField(max_length=1, choices=STATUSES, default='None')
     bidder = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    last_contact = models.DateField(null=True, blank=True)
     comments = models.TextField(null=True, blank=True)
 
     class Meta:

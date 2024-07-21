@@ -11,4 +11,6 @@ urlpatterns = [
     path('meeting-list/', views.MeetingListView, name='meeting-list'),
     path('settings/', views.SettingsView, name='settings'),
     path('export/', views.RusheeCSV, name='export'),
+    path('file-as/', views.FileAsView, name='file-as'),
+    path('merge/', views.MergeView, name='merge'),
 ]

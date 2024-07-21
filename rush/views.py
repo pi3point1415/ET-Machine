@@ -308,3 +308,55 @@ def RusheeCSV(request):
 
     return response
 
+
+@login_required
+@staff_member_required()
+def FileAsView(request):
+
+    if request.method == 'POST':
+        form = FileAsUserForm(request.POST)
+        if form.is_valid():
+            rushee = form.cleaned_data['rushee']
+            active = form.cleaned_data['user']
+            for i in Filing.objects.filter(rushee=rushee, active=active):
+                i.delete()
+            if form.cleaned_data['type'] != 'x':
+                filing = Filing(rushee=rushee, active=active, type=form.cleaned_data['type'])
+                filing.save()
+    else:
+        form = FileAsUserForm()
+
+    context = {
+        'form': form
+    }
+
+    return render(request, 'rush/file.html', context=context)
+
+
+@login_required
+@staff_member_required()
+def MergeView(request):
+    if request.method == 'POST':
+        form = MergeForm(request.POST)
+        if form.is_valid():
+            r1 = form.cleaned_data['r1']
+            r2 = form.cleaned_data['r2']
+            filings1 = Filing.objects.filter(rushee=r1)
+            filings2 = Filing.objects.filter(rushee=r2)
+
+            for i in filings2:
+                if filings1.filter(active=i.active).exists():
+                    i.delete()
+                else:
+                    i.rushee = r1
+                    i.save()
+
+            r2.delete()
+    else:
+        form = MergeForm()
+
+    context = {
+        'form': form
+    }
+
+    return render(request, 'rush/merge.html', context=context)
