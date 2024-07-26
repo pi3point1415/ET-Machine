@@ -73,4 +73,8 @@ class MergeForm(forms.Form):
             raise ValidationError('Rushees must be different.')
 
 
+class DiscordForm(forms.Form):
+    id = forms.CharField(widget=forms.TextInput(attrs={'style': 'width: 30ch;'}), label='User ID')
+
+
 FilingFormSet = formset_factory(FilingForm, extra=0)

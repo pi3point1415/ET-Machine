@@ -1,16 +1,12 @@
-import csv
-
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views import generic
-from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import PasswordChangeForm
+from django.urls import reverse_lazy
 
-from .models import Rushee, Filing, Settings
+from .models import Settings, Discord
 from .forms import *
 
 import csv
@@ -159,7 +155,7 @@ def RusheeDetailView(request, pk):
 
 
 @login_required
-@staff_member_required()
+@staff_member_required(login_url=reverse_lazy('login'))
 def ActiveListView(request):
     User = get_user_model()
     active_list = User.objects.all()
@@ -230,7 +226,7 @@ def PasswordResetView(request):
 
 
 @login_required
-@staff_member_required()
+@staff_member_required(login_url=reverse_lazy('login'))
 def MeetingListView(request):
     rushees = Rushee.objects.all()
     User = get_user_model()
@@ -258,7 +254,7 @@ def MeetingListView(request):
 
 
 @login_required
-@staff_member_required()
+@staff_member_required(login_url=reverse_lazy('login'))
 def SettingsView(request):
     settings = Settings.objects.get(id=1)
     initial = {'b': settings.b, 'n': settings.n, 'w': settings.w, 'f': settings.f}
@@ -267,7 +263,8 @@ def SettingsView(request):
         settings_form = SettingsForm(request.POST)
         delete_form = DeleteForm(request.POST)
         if settings_form.is_valid():
-            data = (settings_form.cleaned_data['b'], settings_form.cleaned_data['n'], settings_form.cleaned_data['w'], settings_form.cleaned_data['f'])
+            data = (settings_form.cleaned_data['b'], settings_form.cleaned_data['n'],
+                    settings_form.cleaned_data['w'], settings_form.cleaned_data['f'])
             data = ','.join([str(i) for i in data])
             settings.autobid = data
             settings.save()
@@ -310,7 +307,7 @@ def RusheeCSV(request):
 
 
 @login_required
-@staff_member_required()
+@staff_member_required(login_url=reverse_lazy('login'))
 def FileAsView(request):
 
     if request.method == 'POST':
@@ -334,7 +331,7 @@ def FileAsView(request):
 
 
 @login_required
-@staff_member_required()
+@staff_member_required(login_url=reverse_lazy('login'))
 def MergeView(request):
     if request.method == 'POST':
         form = MergeForm(request.POST)
@@ -360,3 +357,34 @@ def MergeView(request):
     }
 
     return render(request, 'rush/merge.html', context=context)
+
+
+@login_required
+def DiscordView(request):
+    if request.method == 'POST':
+        form = DiscordForm(request.POST)
+        if form.is_valid():
+            if 'submit' in request.POST:
+                for i in Discord.objects.filter(user=request.user):
+                    i.delete()
+                Discord(user=request.user, id=form.cleaned_data['id']).save()
+            elif 'unlink' in request.POST:
+                for i in Discord.objects.filter(user=request.user):
+                    i.delete()
+                form = DiscordForm()
+    else:
+        discord_id = ''
+        for i in Discord.objects.filter(user=request.user):
+            discord_id = i.id
+        form = DiscordForm(initial={'id': discord_id})
+
+    context = {
+        'form': form
+    }
+
+    return render(request, 'rush/discord_config.html', context=context)
+
+
+@login_required
+def DictionaryView(request):
+    return render(request, 'rush/dictionary.html')

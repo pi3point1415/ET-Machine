@@ -26,7 +26,7 @@ SECRET_KEY = open('key').read().rstrip()
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = os.environ.get('HOSTS', '').split(',')
+ALLOWED_HOSTS = os.environ.get('HOSTS', '').split(',') + ['localhost']
 
 
 # Application definition
@@ -132,3 +132,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Redirect to home URL after login (Default redirects to /accounts/profile/)
 LOGIN_REDIRECT_URL = '/'
+
+LOGIN_URL = '/login/'

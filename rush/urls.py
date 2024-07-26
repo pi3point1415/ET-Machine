@@ -13,4 +13,6 @@ urlpatterns = [
     path('export/', views.RusheeCSV, name='export'),
     path('file-as/', views.FileAsView, name='file-as'),
     path('merge/', views.MergeView, name='merge'),
+    path('discord/', views.DiscordView, name='discord'),
+    path('dictionary/', views.DictionaryView, name='dictionary'),
 ]

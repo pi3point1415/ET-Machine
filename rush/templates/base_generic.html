@@ -24,6 +24,7 @@
                     {% if user.is_authenticated %}
                         <li><a href="{% url 'file-list' %}">File on Rushees</a></li>
                         <li><a href="{% url 'rushee-list' %}">List Rushees</a></li>
+                        <li><a href="{% url 'dictionary' %}">Dictionary</a></li>
                     {% endif %}
                 </ul>
 
@@ -40,6 +41,7 @@
                 <ul class="sidebar-nav">
                     {% if user.is_authenticated %}
                         <li>User: {{ user.get_username }}</li>
+                        <li><a href="{% url 'discord' %}">Discord Config</a></li>
                         <li><a href="{% url 'reset-password' %}">Change Password</a></li>
                         <li>
                             <form id="logout-form" method="post" action="{% url 'logout' %}">

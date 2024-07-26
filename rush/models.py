@@ -111,6 +111,11 @@ class Filing(models.Model):
         return f'{self.type}: {self.rushee}'
 
 
+class Discord(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    id = models.CharField(max_length=50, primary_key=True)
+
+
 class Settings(models.Model):
     autobid = models.CharField(max_length=50)
 

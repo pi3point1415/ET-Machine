@@ -1,0 +1,27 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>Discord Config</h1>
+
+    <p>Enter your Discord User ID to link your account to machine. Press the unlink button to unlink your account.</p>
+
+    <form action="" method="post">
+        {% csrf_token %}
+        {{ form.as_table }}
+        <input type="submit" value="Submit" name="submit">
+        <input type="submit" value="Unlink" name="unlink">
+    </form>
+
+    <h2>Instructions</h2>
+    <p>DM any message to Machine#6493 to get a list of the current rushees.
+        You can use reactions to submit your filing for each one. Note that
+        only reactions on the bot's most recent messages will be counted. To
+        be safe, you should send a message to get a fresh list of rushees
+        before you start reacting. The key for reactions is:</p>
+    <ul>
+    <li>❤: Bid</li>
+    <li>👍: No objection</li>
+    <li>👎: Weak</li>
+    <li>☠: Flush</li>
+    </ul>
+{% endblock %}
