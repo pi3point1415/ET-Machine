@@ -20,12 +20,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# Reads the secret key from a file called "key"
 SECRET_KEY = open('key').read().rstrip()
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# Gets allowed hosts from an environment variable
 ALLOWED_HOSTS = os.environ.get('HOSTS', '').split(',') + ['localhost']
 
 
@@ -38,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
-    "rush.apps.RushConfig"
+    'rush.apps.RushConfig'
 ]
 
 MIDDLEWARE = [
@@ -86,6 +87,8 @@ DATABASES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
+# Currently, these are disabled so that actives can choose anything for their password, but if
+# at some point you want more secure passwords required, you can turn some or all of these back on
 
 AUTH_PASSWORD_VALIDATORS = [
     # {
@@ -133,4 +136,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Redirect to home URL after login (Default redirects to /accounts/profile/)
 LOGIN_REDIRECT_URL = '/'
 
+# The url to redirect to when logging in
 LOGIN_URL = '/login/'

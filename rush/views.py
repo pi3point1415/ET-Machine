@@ -388,3 +388,31 @@ def DiscordView(request):
 @login_required
 def DictionaryView(request):
     return render(request, 'rush/dictionary.html')
+
+
+def SigninView(request):
+    if request.method == 'POST':
+        form = SigninForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            email = form.cleaned_data['email']
+            heard = form.cleaned_data['heard']
+            signin = Signin(name=name, email=email, heard=heard)
+            signin.save()
+    form = SigninForm()
+
+    context = {
+        'form': form
+    }
+    return render(request, 'rush/signin.html', context=context)
+
+
+@login_required
+@staff_member_required(login_url=reverse_lazy('login'))
+def SigninListView(request):
+    signins = Signin.objects.all()
+
+    context = {
+        'signins': signins
+    }
+    return render(request, 'rush/signin-list.html', context=context)

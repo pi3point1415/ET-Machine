@@ -22,6 +22,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
+    # Uncomment this next line if you want to use the site admin
     # path('admin/', admin.site.urls),
     path('', include('rush.urls')),
     path('', include('django.contrib.auth.urls')),

@@ -21,10 +21,12 @@
             {% block sidebar %}
                 <ul class="sidebar-nav">
                     <li><a href="{% url 'index' %}">Home</a></li>
+                    <li><a href="{% url 'signin' %}">Sign-in page</a></li>
                     {% if user.is_authenticated %}
                         <li><a href="{% url 'file-list' %}">File on Rushees</a></li>
                         <li><a href="{% url 'rushee-list' %}">List Rushees</a></li>
                         <li><a href="{% url 'dictionary' %}">Dictionary</a></li>
+                        <li><a href="{% url 'signins' %}">List Sign-ins</a></li>
                     {% endif %}
                 </ul>
 

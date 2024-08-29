@@ -15,4 +15,6 @@ urlpatterns = [
     path('merge/', views.MergeView, name='merge'),
     path('discord/', views.DiscordView, name='discord'),
     path('dictionary/', views.DictionaryView, name='dictionary'),
+    path('signin/', views.SigninView, name='signin'),
+    path('signins/', views.SigninListView, name='signins')
 ]

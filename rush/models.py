@@ -134,3 +134,13 @@ class Settings(models.Model):
     @property
     def f(self):
         return int(self.autobid.split(',')[3])
+
+
+class Signin(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)
+    name = models.CharField(max_length=50)
+    email = models.EmailField()
+    heard = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f'{self.name}: {self.timestamp}'
