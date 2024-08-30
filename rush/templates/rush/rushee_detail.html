@@ -40,6 +40,7 @@
         <input type="submit" value="Update" name="update">
     </form>
     <br/>
+    {% if user.is_staff %}
     <strong>Filings:</strong>
     <ul>
         {% for filing in rushee.filing_set.all %}
@@ -48,6 +49,7 @@
             <li> no filings</li>
         {% endfor %}
     </ul>
+    {% endif %}
     <p>My filing: {{ active_file }}</p>
 
     <form action="" method="post">

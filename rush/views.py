@@ -12,44 +12,58 @@ from .forms import *
 import csv
 
 
-# Create your views here.
+# Homepage, just render it
 def index(request):
     return render(request, 'index.html')
 
 
+# Page for listing rushees to file on
 @login_required
 def FileListView(request):
+    # Get all rushees
     rushee_list = Rushee.objects.all()
 
     filings = []
     for i in rushee_list:
+        # Get filings by current user for the given rushee
         filing = Filing.objects.filter(active_id=request.user.id, rushee_id=i.id)
         if len(filing) > 0:
+            # Add the current filing to the list
             filings.append(filing[0].type)
         else:
+            # No filing
             filings.append('x')
 
+    # Initial data for filing formset
     initial = [
         {'type': i} for i in filings
     ]
 
+    # If form submitted
     if request.method == 'POST':
         formset = FilingFormSet(request.POST)
         for i, form in enumerate(formset):
+            # Find form that was submitted
             if form.is_valid():
+                # Filing type
                 type = form.cleaned_data['type']
 
+                # Get corresponding rushee
                 rushee = rushee_list[i]
 
+                # Delete existing filing to replace with new one
                 filings = Filing.objects.filter(active_id=request.user.id, rushee_id=rushee.id)
                 for j in filings:
                     j.delete()
 
+                # Create new filing
                 active_file = [Filing(rushee=rushee, active=request.user, type=type)]
                 active_file[0].save()
 
+                # Set form data to display
                 initial[i] = {'type': type}
 
+    # Set form data to display
     formset = FilingFormSet(
         initial=initial
     )
@@ -62,20 +76,26 @@ def FileListView(request):
     return render(request, 'rush/file_list.html', context)
 
 
+# View for listing rushee data
 @login_required
 def RusheeListView(request):
+    # Get all rushees
     rushee_list = Rushee.objects.all()
 
     if request.method == 'POST':
+        # If form submitted
         form = AddRusheesForm(request.POST)
 
         if form.is_valid():
+            # Get rushees from submitted textarea
             rushees = form.cleaned_data['rushees']
             for i in rushees.splitlines():
+                # Don't create a rushee with an identical name
                 if not Rushee.objects.filter(name__exact=i).exists():
                     rushee = Rushee(name=i)
                     rushee.save()
 
+    # Use a blank form for adding rushees
     form = AddRusheesForm()
 
     context = {
@@ -86,51 +106,70 @@ def RusheeListView(request):
     return render(request, 'rush/rushee_list.html', context)
 
 
+# View for seeing a specific rushee
 @login_required
 def RusheeDetailView(request, pk):
+    # Get corresponding rushee
     rushee = get_object_or_404(Rushee, pk=pk)
+    # Get filing result for the current active
     active_file = Filing.objects.filter(active_id=request.user.id).filter(rushee_id=rushee.id)
-    user_file = Filing.objects.filter(active_id=request.user.id).filter(rushee_id=rushee.id)
+    # Get the filing type
     if len(active_file) > 0:
-        user_file = user_file[0].type
+        user_file = active_file[0].type
     else:
+        # x if no filing exists
         user_file = 'x'
 
+    # Form data
     user_file = {'type': user_file}
 
     if request.method == 'POST':
+        # Update form button clicked
         if 'update' in request.POST:
+            # Get data from update form
             modify_form = ModifyRusheeForm(instance=rushee, data=request.POST)
+            # Default filing form
             filing_form = FilingForm(initial=user_file)
 
             if modify_form.is_valid():
                 for i in modify_form.cleaned_data.keys():
+                    # Set each attribute for the rushee according to the data in the form
                     setattr(rushee, i, modify_form.cleaned_data[i])
                 rushee.save()
+        # File form button clicked
         elif 'file' in request.POST:
+            # Get form data
             filing_form = FilingForm(request.POST)
 
             if filing_form.is_valid():
                 type = filing_form.cleaned_data['type']
+                # Delete existing filing(s)
                 for i in active_file:
                     i.delete()
                 active_file = []
                 if type != 'x':
+                    # Create new filing
                     active_file = [Filing(rushee=rushee, active=request.user, type=type)]
                     active_file[0].save()
+        # Delete form button clicked
         elif 'delete' in request.POST:
+            # Default filing form
             filing_form = FilingForm(initial=user_file)
+            # Get delete form data
             delete_form = DeleteForm(request.POST)
             if delete_form.is_valid():
+                # If delete rushee checked, delete rushee and redirect to rushee list
                 if delete_form.cleaned_data['rushees']:
                     rushee.delete()
                     return redirect('rushee-list')
+                # If filings checked, delete relevant filings
                 if delete_form.cleaned_data['filings']:
                     filings = Filing.objects.all()
                     for i in filings:
                         if i.rushee == rushee:
                             i.delete()
         else:
+            # Default filing from
             filing_form = FilingForm(initial=user_file)
     else:
         filing_form = FilingForm(initial=user_file)
@@ -139,6 +178,7 @@ def RusheeDetailView(request, pk):
     delete_form = DeleteForm()
 
     if len(active_file) > 0:
+        # Get the display text for the filing
         active_file = active_file[0].get_type_display()
     else:
         active_file = 'No Filing'

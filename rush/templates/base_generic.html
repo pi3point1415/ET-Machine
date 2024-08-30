@@ -26,7 +26,9 @@
                         <li><a href="{% url 'file-list' %}">File on Rushees</a></li>
                         <li><a href="{% url 'rushee-list' %}">List Rushees</a></li>
                         <li><a href="{% url 'dictionary' %}">Dictionary</a></li>
-                        <li><a href="{% url 'signins' %}">List Sign-ins</a></li>
+                        {% if user.is_staff %}
+                            <li><a href="{% url 'signins' %}">List Sign-ins</a></li>
+                        {% endif %}
                     {% endif %}
                 </ul>
 
