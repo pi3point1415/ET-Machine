@@ -11,6 +11,7 @@ from .forms import *
 
 import csv
 
+import pardinalink
 
 # Homepage, just render it
 def index(request):
@@ -95,6 +96,7 @@ def RusheeListView(request):
                 if not Rushee.objects.filter(name__exact=i).exists():
                     rushee = Rushee(name=i)
                     rushee.save()
+                    pardinalink.run(lambda b: b.machine_new(i, rushee.id))
 
     # Use a blank form for adding rushees
     form = AddRusheesForm()

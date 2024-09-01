@@ -1,0 +1,3 @@
+body { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5rem; min-height: 100vh; }
+#signinform { text-align: right; }
+#signinform input[type="text"], #signinform input[type="email"] { width: 20em; margin-left: 1em; }
