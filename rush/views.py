@@ -57,8 +57,9 @@ def FileListView(request):
                     j.delete()
 
                 # Create new filing
-                active_file = [Filing(rushee=rushee, active=request.user, type=type)]
-                active_file[0].save()
+                if type != 'x':
+                    active_file = [Filing(rushee=rushee, active=request.user, type=type)]
+                    active_file[0].save()
 
                 # Set form data to display
                 initial[i] = {'type': type}
@@ -448,7 +449,6 @@ def SigninView(request):
 
 
 @login_required
-@staff_member_required(login_url=reverse_lazy('login'))
 def SigninListView(request):
     signins = Signin.objects.all()
 

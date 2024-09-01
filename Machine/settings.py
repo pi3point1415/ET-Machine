@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = open('key').read().rstrip()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # Gets allowed hosts from an environment variable
 ALLOWED_HOSTS = os.environ.get('HOSTS', '').split(',') + ['localhost']
@@ -123,6 +123,7 @@ USE_TZ = True
 
 import os
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'productionFiles'
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "static"),
