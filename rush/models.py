@@ -1,9 +1,12 @@
 from django.db import models
 from django.urls import reverse
 from django.conf import settings
+from django.contrib.auth.models import AbstractUser
 
 
 # Create your models here.
+
+
 class Rushee(models.Model):
     STATUSES = (
         ('n', 'None'),
@@ -106,6 +109,15 @@ class Filing(models.Model):
 
     rushee = models.ForeignKey(Rushee, on_delete=models.CASCADE)
     active = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    @staticmethod
+    def filing_from_string(x):
+        names = [i[1] for i in Filing.FILING_TYPES]
+        try:
+            return Filing.FILING_TYPES[names.index(x)][0]
+        except ValueError:
+            return 'x'
+
 
     def __str__(self):
         return f'{self.type}: {self.rushee}'

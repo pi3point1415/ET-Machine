@@ -1,3 +1,5 @@
+from json import loads
+
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.admin.views.decorators import staff_member_required
@@ -12,6 +14,7 @@ from .forms import *
 import csv
 
 import pardinalink
+
 
 # Homepage, just render it
 def index(request):
@@ -30,49 +33,28 @@ def FileListView(request):
         filing = Filing.objects.filter(active_id=request.user.id, rushee_id=i.id)
         if len(filing) > 0:
             # Add the current filing to the list
-            filings.append(filing[0].type)
+            filings.append(filing[0].get_type_display)
         else:
             # No filing
-            filings.append('x')
+            filings.append('No Filing')
 
-    # Initial data for filing formset
-    initial = [
-        {'type': i} for i in filings
-    ]
-
-    # If form submitted
+    # If data updated
     if request.method == 'POST':
-        formset = FilingFormSet(request.POST)
-        for i, form in enumerate(formset):
-            # Find form that was submitted
-            if form.is_valid():
-                # Filing type
-                type = form.cleaned_data['type']
+        data = loads(request.body)
+        rushee_id = data['id']
+        filing_type = Filing.filing_from_string(data['type'])
 
-                # Get corresponding rushee
-                rushee = rushee_list[i]
+        Filing.objects.filter(active_id=request.user.id, rushee_id=rushee_id).delete()
+        if filing_type != 'x':
+            filing = Filing(active_id=request.user.id, rushee_id=rushee_id, type=filing_type)
+            filing.save()
 
-                # Delete existing filing to replace with new one
-                filings = Filing.objects.filter(active_id=request.user.id, rushee_id=rushee.id)
-                for j in filings:
-                    j.delete()
-
-                # Create new filing
-                if type != 'x':
-                    active_file = [Filing(rushee=rushee, active=request.user, type=type)]
-                    active_file[0].save()
-
-                # Set form data to display
-                initial[i] = {'type': type}
-
-    # Set form data to display
-    formset = FilingFormSet(
-        initial=initial
-    )
+    filingOptions = [i[1] for i in Filing.FILING_TYPES] + ['No Filing']
 
     context = {
-        'list': list(zip(rushee_list, formset)),
-        'formset': formset
+        'rushees': zip(rushee_list, filings),
+        'rushee_list': rushee_list,
+        'filingOptions': filingOptions,
     }
 
     return render(request, 'rush/file_list.html', context)

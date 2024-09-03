@@ -1,40 +1,107 @@
 {% extends "base_generic.html" %}
 
+{% block head %}
+    <script src="https://cdn.jsdelivr.net/npm/handsontable@14.5.0/dist/handsontable.full.min.js"
+            integrity="sha256-SlpWnE3U6DD0rAcGzyQ4QZpHv34LaUHHSXp25zha7X4=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@14.5.0/dist/handsontable.full.min.css"
+          integrity="sha256-Vyu6Fh7aj+nHER1qlxnzFFth69F1qgoNTNk0uMmeFwI=" crossorigin="anonymous">
+{% endblock %}
+
 {% block content %}
     <h1>File on a Rushee</h1>
 
-    {% if list %}
-        <dl>
-            {% for rushee, form in list %}
-                <dt
-                        {% if user.is_staff %}
-                            {% if rushee.autobid %}
-                                class="text-success"
-                            {% elif rushee.flush %}
-                                class="text-danger"
-                            {% elif rushee.weak %}
-                                class="text-warning"
-                            {% endif %}
-                        {% endif %}>
-                    <a href="{{ rushee.get_absolute_url }}">{{ rushee }}</a>
-                    {% if user.is_staff %}
-                        ({{ rushee.short_filings_desc }})
-                    {% endif %}
-                </dt>
-                <dd>
-                    <form action="" method="post">
-                        {{ formset.management_form }}
-                        {% csrf_token %}
-                        <table>
-                            {{ form.as_table }}
-                        </table>
-                        <input type="submit" value="Submit">
-                    </form>
-                </dd>
-            {% endfor %}
-        </dl>
+    <p>Data is uploaded automatically when you select an option</p>
 
-    {% else %}
-        <p>There are no rushees in the system.</p>
-    {% endif %}
+    <div id="table"></div>
 {% endblock %}
+
+
+{% block foot %}
+    <script type="text/javascript">
+
+        const rushees = [
+                {% for rushee, filing in rushees %}[
+                    "<a href='{{ rushee.get_absolute_url }}'>{{ rushee.name }}</a>",
+                    "{{ filing }}",
+                    {% if user.is_staff %}
+                        "{{ rushee.short_filings_desc }}",
+                    {% endif %}
+                    ],
+                {% endfor %}
+        ];
+
+        const ids = [
+            {% for i in rushee_list %}
+                {{ i.id }},
+            {% endfor %}
+        ];
+
+        const csrftoken = getToken('csrftoken')
+
+        const container = document.getElementById('table');
+        const hot = new Handsontable(container, {
+            data: rushees,
+            colHeaders: ['Name', 'My Filing', 'Filing Status'],
+            fixedColumnsStart: 1,
+            filters: true,
+            dropdownMenu: ['filter_by_condition', 'filter_by_value', 'filter_action_bar'],
+            columnSorting: true,
+            columns: [
+                {
+                    type: 'text',
+                    renderer: 'html',
+                    readOnly: true,
+                },
+                {
+                    type: 'dropdown',
+                    source: [
+                        {% for i in filingOptions %}
+                            '{{ i }}',
+                        {% endfor %}
+                    ]
+                },
+                {% if user.is_staff %}
+                    {
+                        type: 'text',
+                        readOnly: true,
+                    }
+                {% endif %}
+            ],
+            licenseKey: 'non-commercial-and-evaluation',
+            afterChange(change, source) {
+                if (source === 'loadData') {
+                    return;
+                }
+
+                if (!change) {
+                    return;
+                }
+
+                for (let i = 0; i < change.length; i++) {
+                    const row = change[i][0]
+                    const col = hot.propToCol(change[i][1])
+                    if (hot.getCell(row, col).classList.contains("htInvalid")) {
+                        hot.setDataAtCell(row, col, change[i][2])
+                        break;
+                    }
+
+                    const id = ids[row];
+                    const type = change[i][3]
+
+                    fetch("{{ request.path }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrftoken,
+                        },
+                        body: JSON.stringify({id: id, type: type}),
+                    })
+                        .then((response) => {
+                            return response.json();
+                        })
+                }
+            }
+        });
+    </script>
+{% endblock %}
+

@@ -1,57 +1,14 @@
 {% extends "base_generic.html" %}
 
+{% block head %}
+    <script src="https://cdn.jsdelivr.net/npm/handsontable@14.5.0/dist/handsontable.full.min.js" integrity="sha256-SlpWnE3U6DD0rAcGzyQ4QZpHv34LaUHHSXp25zha7X4=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@14.5.0/dist/handsontable.full.min.css" integrity="sha256-Vyu6Fh7aj+nHER1qlxnzFFth69F1qgoNTNk0uMmeFwI=" crossorigin="anonymous">
+    <script src="https://unpkg.com/htmx.org@2.0.2"  integrity="sha384-Y7hw+L/jvKeWIRRkqWYfPcvVxHzVzn5REgzbawhxAuQGwX1XWe70vji+VSeHOThJ" crossorigin="anonymous"></script>
+{% endblock %}
+
 {% block content %}
-    <h1>Rushee List</h1>
+    <div id="table"></div>
 
-    {% if rushee_list %}
-        <table class="table-fancy">
-            <tr>
-                <th style="text-align: left">Rushee</th>
-                <th>Bid Status</th>
-                <th>Bidder</th>
-                <th>Dorm</th>
-                <th>Email</th>
-                <th>Discord</th>
-                <th>Phone</th>
-                <th>Last Contact</th>
-                {% if user.is_staff %}
-                    <th>
-                        Filing Status
-                    </th>
-                {% endif %}
-            </tr>
-            {% for rushee in rushee_list %}
-                <tr>
-                    <td style="text-align: left">
-                        <a href="{{ rushee.get_absolute_url }}">{{ rushee }}</a>
-                    </td>
-                    <td>{{ rushee.get_status_display }}</td>
-                    <td>{{ rushee.bidder|upper }}</td>
-                    <td>{{ rushee.dorm }}</td>
-                    <td>{{ rushee.email }}</td>
-                    <td>{{ rushee.discord }}</td>
-                    <td>{{ rushee.phone }}</td>
-                    <td>{{ rushee.last_contact }}</td>
-                    {% if user.is_staff %}
-                        <td{% if user.is_staff %}
-                            {% if rushee.autobid %}
-                                class="text-success"
-                            {% elif rushee.flush %}
-                                class="text-danger"
-                            {% elif rushee.weak %}
-                                class="text-warning"
-                            {% endif %}
-                        {% endif %} >
-                            ({{ rushee.short_filings_desc }})
-                        </td>
-                    {% endif %}
-                </tr>
-            {% endfor %}
-        </table>
-
-    {% else %}
-        <p>There are no rushees in the system.</p>
-    {% endif %}
     <form action="" method="post">
         {% csrf_token %}
         {{ form.non_field_errors }}
@@ -62,4 +19,71 @@
         <br/>
         <input type="submit" value="Submit">
     </form>
+{% endblock %}
+
+{% block foot %}
+    <script type="text/javascript">
+
+        const rushees = [
+                {% for i in rushee_list %}[
+                    "<a href='{{ i.get_absolute_url }}'>{{ i.name }}</a>",
+                    "{{ i.get_status_display }}",
+                    "{{ i.bidder }}",
+                    "{{ i.dorm }}",
+                    "{{ i.email }}",
+                    "{{ i.discord }}",
+                    "{{ i.phone }}",
+                    "{{ i.last_contact }}",
+                    {% if user.is_staff %}
+                        "{{ i.short_filings_desc }}",
+                    {% endif %}
+                    ],
+                {% endfor %}
+        ];
+
+
+        const container = document.getElementById('table');
+        const hot = new Handsontable(container, {
+            data: rushees,
+            colHeaders: ['Name', 'Bid Status', 'Bidder', 'Dorm', 'Email', 'Discord', 'Phone', 'Last Contact', 'Filing Status'],
+            fixedColumnsStart: 1,
+            filters: true,
+            dropdownMenu: ['filter_by_condition', 'filter_by_value', 'filter_action_bar'],
+            columnSorting: true,
+            readOnly: true,
+            columns: [
+                {
+                    type: 'text',
+                    renderer: 'html',
+                },
+                {
+                    type: 'text'
+                },
+                {
+                    type: 'text'
+                },
+                {
+                    type: 'text'
+                },
+                {
+                    type: 'text'
+                },
+                {
+                    type: 'text'
+                },
+                {
+                    type: 'text'
+                },
+                {
+                    type: 'text'
+                },
+                {% if user.is_staff %}
+                {
+                    type: 'text'
+                },
+                {% endif %}
+            ],
+            licenseKey: 'non-commercial-and-evaluation',
+        });
+    </script>
 {% endblock %}

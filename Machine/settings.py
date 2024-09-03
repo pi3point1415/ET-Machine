@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
-    'rush.apps.RushConfig'
+    'rush.apps.RushConfig',
+    'users.apps.UsersConfig',
 ]
 
 MIDDLEWARE = [
@@ -142,3 +143,5 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # The url to redirect to when logging in
 LOGIN_URL = '/login/'
+
+AUTH_USER_MODEL = 'users.User'
