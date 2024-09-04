@@ -1,107 +1,181 @@
 {% extends "base_generic.html" %}
 
 {% block head %}
-    <script src="https://cdn.jsdelivr.net/npm/handsontable@14.5.0/dist/handsontable.full.min.js"
-            integrity="sha256-SlpWnE3U6DD0rAcGzyQ4QZpHv34LaUHHSXp25zha7X4=" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@14.5.0/dist/handsontable.full.min.css"
-          integrity="sha256-Vyu6Fh7aj+nHER1qlxnzFFth69F1qgoNTNk0uMmeFwI=" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"
+            integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.32.0/js/jquery.tablesorter.min.js"
+            integrity="sha512-O/JP2r8BG27p5NOtVhwqsSokAwEP5RwYgvEzU9G6AfNjLYqyt2QT8jqU1XrXCiezS50Qp1i3ZtCQWkHZIRulGA=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.32.0/css/theme.bootstrap_4.min.css"
+          integrity="sha512-2C6AmJKgt4B+bQc08/TwUeFKkq8CsBNlTaNcNgUmsDJSU1Fg+R6azDbho+ZzuxEkJnCjLZQMozSq3y97ZmgwjA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
 {% endblock %}
 
 {% block content %}
     <h1>File on a Rushee</h1>
 
-    <p>Data is uploaded automatically when you select an option</p>
+    <table id="table" class="tablesorter-bootstrap table table-bordered table-striped">
 
-    <div id="table"></div>
+        <thead class="thead-light">
+        <tr>
+            <th>Name</th>
+            <th>My Filing</th>
+            {% if user.is_staff %}
+                <th>Filing Status</th>
+            {% endif %}
+            {% for i in filingOptions %}
+                <th class="sorter-false">{{ i }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+        {% for rushee, filing, radio in rushees %}
+            <tr id="txt{{ rushee.id }}">
+                {% include 'rush/file_list_row.html' %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 {% endblock %}
 
 
 {% block foot %}
+    <style>
+        th {
+            position: sticky;
+            top: 0;
+        }
+
+        td a {
+            display: block;
+        }
+
+        input {
+            height: 20px !important;
+            width: 20px !important;
+        }
+
+        th.sorter-false {
+            width: 100px;
+        }
+
+    </style>
+
     <script type="text/javascript">
-
-        const rushees = [
-                {% for rushee, filing in rushees %}[
-                    "<a href='{{ rushee.get_absolute_url }}'>{{ rushee.name }}</a>",
-                    "{{ filing }}",
-                    {% if user.is_staff %}
-                        "{{ rushee.short_filings_desc }}",
-                    {% endif %}
-                    ],
-                {% endfor %}
-        ];
-
-        const ids = [
-            {% for i in rushee_list %}
-                {{ i.id }},
+        filingTypes = [
+            {% for i in filingOptions %}
+                "{{ i }}",
             {% endfor %}
         ];
 
-        const csrftoken = getToken('csrftoken')
-
-        const container = document.getElementById('table');
-        const hot = new Handsontable(container, {
-            data: rushees,
-            colHeaders: ['Name', 'My Filing', 'Filing Status'],
-            fixedColumnsStart: 1,
-            filters: true,
-            dropdownMenu: ['filter_by_condition', 'filter_by_value', 'filter_action_bar'],
-            columnSorting: true,
-            columns: [
-                {
-                    type: 'text',
-                    renderer: 'html',
-                    readOnly: true,
-                },
-                {
-                    type: 'dropdown',
-                    source: [
-                        {% for i in filingOptions %}
-                            '{{ i }}',
-                        {% endfor %}
-                    ]
-                },
-                {% if user.is_staff %}
-                    {
-                        type: 'text',
-                        readOnly: true,
-                    }
-                {% endif %}
-            ],
-            licenseKey: 'non-commercial-and-evaluation',
-            afterChange(change, source) {
-                if (source === 'loadData') {
-                    return;
-                }
-
-                if (!change) {
-                    return;
-                }
-
-                for (let i = 0; i < change.length; i++) {
-                    const row = change[i][0]
-                    const col = hot.propToCol(change[i][1])
-                    if (hot.getCell(row, col).classList.contains("htInvalid")) {
-                        hot.setDataAtCell(row, col, change[i][2])
-                        break;
-                    }
-
-                    const id = ids[row];
-                    const type = change[i][3]
-
-                    fetch("{{ request.path }}", {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': csrftoken,
-                        },
-                        body: JSON.stringify({id: id, type: type}),
-                    })
-                        .then((response) => {
-                            return response.json();
-                        })
-                }
+        $.tablesorter.addParser({
+            id: 'filings',
+            is: function (s) {
+                return false;
+            },
+            format: function (s) {
+                // Add 1 so that a non-match returns 0 instead of -1, which sorts between 0 and 1
+                return filingTypes.indexOf(s) + 1;
             }
+        })
+
+        $(function () {
+            $("#table").tablesorter({
+                sortList: [[1, 0], [0, 0]],
+                emptyTo: 'emptyMin',
+                headers: {
+                    1: {
+                        sorter: 'filings',
+                        sortInitialOrder: 'asc'
+                    }
+                }
+            });
         });
+
+        {#        const rushees = [#}
+        {#                {% for rushee, filing in rushees %}[#}
+        {#                    "<a href='{{ rushee.get_absolute_url }}'>{{ rushee.name }}</a>",#}
+        {#                    "{{ filing }}",#}
+        {#                    {% if user.is_staff %}#}
+        {#                        "{{ rushee.short_filings_desc }}",#}
+        {#                    {% endif %}#}
+        {#                    ],#}
+        {#                {% endfor %}#}
+        {#        ];#}
+        {##}
+        {#        const ids = [#}
+        {#            {% for i in rushee_list %}#}
+        {#                {{ i.id }},#}
+        {#            {% endfor %}#}
+        {#        ];#}
+        {##}
+        {#        const csrftoken = getToken('csrftoken')#}
+        {##}
+        {#        const container = document.getElementById('table');#}
+        {#        const hot = new Handsontable(container, {#}
+        {#            data: rushees,#}
+        {#            colHeaders: ['Name', 'My Filing', 'Filing Status'],#}
+        {#            fixedColumnsStart: 1,#}
+        {#            filters: true,#}
+        {#            dropdownMenu: ['filter_by_condition', 'filter_by_value', 'filter_action_bar'],#}
+        {#            columnSorting: true,#}
+        {#            columns: [#}
+        {#                {#}
+        {#                    type: 'text',#}
+        {#                    renderer: 'html',#}
+        {#                    readOnly: true,#}
+        {#                },#}
+        {#                {#}
+        {#                    type: 'dropdown',#}
+        {#                    source: [#}
+        {#                        {% for i in filingOptions %}#}
+        {#                            '{{ i }}',#}
+        {#                        {% endfor %}#}
+        {#                    ]#}
+        {#                },#}
+        {#                {% if user.is_staff %}#}
+        {#                    {#}
+        {#                        type: 'text',#}
+        {#                        readOnly: true,#}
+        {#                    }#}
+        {#                {% endif %}#}
+        {#            ],#}
+        {#            licenseKey: 'non-commercial-and-evaluation',#}
+        {#            afterChange(change, source) {#}
+        {#                if (source === 'loadData') {#}
+        {#                    return;#}
+        {#                }#}
+        {##}
+        {#                if (!change) {#}
+        {#                    return;#}
+        {#                }#}
+        {##}
+        {#                for (let i = 0; i < change.length; i++) {#}
+        {#                    const row = change[i][0]#}
+        {#                    const col = hot.propToCol(change[i][1])#}
+        {#                    if (hot.getCell(row, col).classList.contains("htInvalid")) {#}
+        {#                        hot.setDataAtCell(row, col, change[i][2])#}
+        {#                        break;#}
+        {#                    }#}
+        {##}
+        {#                    const id = ids[row];#}
+        {#                    const type = change[i][3]#}
+        {##}
+        {#                    fetch("{{ request.path }}", {#}
+        {#                        method: 'POST',#}
+        {#                        headers: {#}
+        {#                            'Content-Type': 'application/json',#}
+        {#                            'X-CSRFToken': csrftoken,#}
+        {#                        },#}
+        {#                        body: JSON.stringify({id: id, type: type}),#}
+        {#                    })#}
+        {#                        .then((response) => {#}
+        {#                            return response.json();#}
+        {#                        })#}
+        {#                }#}
+        {#            }#}
+        {#        });#}
     </script>
 {% endblock %}
 

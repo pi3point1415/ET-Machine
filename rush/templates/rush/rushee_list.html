@@ -1,13 +1,52 @@
 {% extends "base_generic.html" %}
 
 {% block head %}
-    <script src="https://cdn.jsdelivr.net/npm/handsontable@14.5.0/dist/handsontable.full.min.js" integrity="sha256-SlpWnE3U6DD0rAcGzyQ4QZpHv34LaUHHSXp25zha7X4=" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@14.5.0/dist/handsontable.full.min.css" integrity="sha256-Vyu6Fh7aj+nHER1qlxnzFFth69F1qgoNTNk0uMmeFwI=" crossorigin="anonymous">
-    <script src="https://unpkg.com/htmx.org@2.0.2"  integrity="sha384-Y7hw+L/jvKeWIRRkqWYfPcvVxHzVzn5REgzbawhxAuQGwX1XWe70vji+VSeHOThJ" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"
+            integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.32.0/js/jquery.tablesorter.min.js"
+            integrity="sha512-O/JP2r8BG27p5NOtVhwqsSokAwEP5RwYgvEzU9G6AfNjLYqyt2QT8jqU1XrXCiezS50Qp1i3ZtCQWkHZIRulGA=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.32.0/css/theme.bootstrap_4.min.css"
+          integrity="sha512-2C6AmJKgt4B+bQc08/TwUeFKkq8CsBNlTaNcNgUmsDJSU1Fg+R6azDbho+ZzuxEkJnCjLZQMozSq3y97ZmgwjA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
 {% endblock %}
 
 {% block content %}
-    <div id="table"></div>
+    <table id="table" class="tablesorter-bootstrap table table-bordered table-striped">
+        <thead class="thead-light">
+        <tr>
+            <th>Name</th>
+            <th>Bid Status</th>
+            <th>Bidder</th>
+            <th>Dorm</th>
+            <th>Email</th>
+            <th>Discord</th>
+            <th>Phone</th>
+            <th>Last Contact</th>
+            {% if user.is_staff %}
+            <th>Filing Status</th>
+            {% endif %}
+        </tr>
+        </thead>
+        <tbody>
+        {% for i in rushees %}
+            <tr>
+                <td><a href="{{ i.get_absolute_url }}">{{ i.name }}</a></td>
+                <td>{% if i.get_status_display == 'None' %}{% else %}{{ i.get_status_display }}{% endif %}</td>
+                <td>{{ i.bidder|default_if_none:'' }}</td>
+                <td>{{ i.dorm|default_if_none:'' }}</td>
+                <td>{{ i.email|default_if_none:'' }}</td>
+                <td>{{ i.discord|default_if_none:'' }}</td>
+                <td>{{ i.phone|default_if_none:'' }}</td>
+                <td>{{ i.last_contact|default_if_none:'' }}</td>
+                {% if user.is_staff %}
+                <td>{{ i.short_filings_desc }}</td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 
     <form action="" method="post">
         {% csrf_token %}
@@ -22,68 +61,21 @@
 {% endblock %}
 
 {% block foot %}
+    <style>
+    th {
+        position: sticky;
+        top: 0;
+    }
+    td a {
+        display: block;
+    }
+    </style>
     <script type="text/javascript">
-
-        const rushees = [
-                {% for i in rushee_list %}[
-                    "<a href='{{ i.get_absolute_url }}'>{{ i.name }}</a>",
-                    "{{ i.get_status_display }}",
-                    "{{ i.bidder }}",
-                    "{{ i.dorm }}",
-                    "{{ i.email }}",
-                    "{{ i.discord }}",
-                    "{{ i.phone }}",
-                    "{{ i.last_contact }}",
-                    {% if user.is_staff %}
-                        "{{ i.short_filings_desc }}",
-                    {% endif %}
-                    ],
-                {% endfor %}
-        ];
-
-
-        const container = document.getElementById('table');
-        const hot = new Handsontable(container, {
-            data: rushees,
-            colHeaders: ['Name', 'Bid Status', 'Bidder', 'Dorm', 'Email', 'Discord', 'Phone', 'Last Contact', 'Filing Status'],
-            fixedColumnsStart: 1,
-            filters: true,
-            dropdownMenu: ['filter_by_condition', 'filter_by_value', 'filter_action_bar'],
-            columnSorting: true,
-            readOnly: true,
-            columns: [
-                {
-                    type: 'text',
-                    renderer: 'html',
-                },
-                {
-                    type: 'text'
-                },
-                {
-                    type: 'text'
-                },
-                {
-                    type: 'text'
-                },
-                {
-                    type: 'text'
-                },
-                {
-                    type: 'text'
-                },
-                {
-                    type: 'text'
-                },
-                {
-                    type: 'text'
-                },
-                {% if user.is_staff %}
-                {
-                    type: 'text'
-                },
-                {% endif %}
-            ],
-            licenseKey: 'non-commercial-and-evaluation',
+        $(function () {
+            $("#table").tablesorter({
+                sortList: [[1,0], [0,0]],
+                emptyTo: 'emptyMin',
+            });
         });
     </script>
 {% endblock %}

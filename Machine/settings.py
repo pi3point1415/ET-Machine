@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = open('key').read().rstrip()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 # Gets allowed hosts from an environment variable
 ALLOWED_HOSTS = os.environ.get('HOSTS', '').split(',') + ['localhost']

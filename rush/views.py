@@ -24,6 +24,28 @@ def index(request):
 # Page for listing rushees to file on
 @login_required
 def FileListView(request):
+    filingOptions = [i[1] for i in Filing.FILING_TYPES] + ['No Filing']
+
+    # If data updated
+    if request.method == 'POST':
+        rushee_id = request.POST['id']
+        filing_type = Filing.filing_from_string(request.POST['value'])
+
+        Filing.objects.filter(active_id=request.user.id, rushee_id=rushee_id).delete()
+        if filing_type != 'x':
+            filing = Filing(active_id=request.user.id, rushee_id=rushee_id, type=filing_type)
+            filing.save()
+
+        radio = [[True, i] if request.POST['value'] == i else [False, i] for i in filingOptions]
+
+        context = {
+            'rushee': get_object_or_404(Rushee, pk=rushee_id),
+            'filing': request.POST['value'],
+            'radio': radio,
+        }
+
+        return render(request, 'rush/file_list_row.html', context)
+
     # Get all rushees
     rushee_list = Rushee.objects.all()
 
@@ -33,27 +55,17 @@ def FileListView(request):
         filing = Filing.objects.filter(active_id=request.user.id, rushee_id=i.id)
         if len(filing) > 0:
             # Add the current filing to the list
-            filings.append(filing[0].get_type_display)
+            filings.append(filing[0].get_type_display())
         else:
             # No filing
             filings.append('No Filing')
 
-    # If data updated
-    if request.method == 'POST':
-        data = loads(request.body)
-        rushee_id = data['id']
-        filing_type = Filing.filing_from_string(data['type'])
+    filingRadios = [[True if i == j else False for j in filingOptions] for i in filings]
 
-        Filing.objects.filter(active_id=request.user.id, rushee_id=rushee_id).delete()
-        if filing_type != 'x':
-            filing = Filing(active_id=request.user.id, rushee_id=rushee_id, type=filing_type)
-            filing.save()
-
-    filingOptions = [i[1] for i in Filing.FILING_TYPES] + ['No Filing']
+    filingRadios = [[[j[i], filingOptions[i]] for i in range(len(j))] for j in filingRadios]
 
     context = {
-        'rushees': zip(rushee_list, filings),
-        'rushee_list': rushee_list,
+        'rushees': zip(rushee_list, filings, filingRadios),
         'filingOptions': filingOptions,
     }
 
@@ -84,7 +96,7 @@ def RusheeListView(request):
     form = AddRusheesForm()
 
     context = {
-        'rushee_list': rushee_list,
+        'rushees': rushee_list,
         'form': form
     }
 

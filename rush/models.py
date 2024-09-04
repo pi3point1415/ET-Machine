@@ -58,9 +58,7 @@ class Rushee(models.Model):
 
         if self.w > autobid.w or self.f > autobid.f:
             return False
-        if self.b >= autobid.b:
-            return True
-        if self.b + self.n >= autobid.n:
+        if self.b >= autobid.b and (self.b + self.n) >= autobid.n:
             return True
         return False
 
@@ -117,7 +115,6 @@ class Filing(models.Model):
             return Filing.FILING_TYPES[names.index(x)][0]
         except ValueError:
             return 'x'
-
 
     def __str__(self):
         return f'{self.type}: {self.rushee}'

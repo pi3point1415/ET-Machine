@@ -1,0 +1,19 @@
+<td><a href="{{ rushee.get_absolute_url }}">{{ rushee.name }}</a></td>
+<td>{% if filing == 'No Filing' %}{% else %}{{ filing }}{% endif %}</td>
+{% if user.is_staff %}
+    <td>{{ rushee.short_filings_desc }}</td>
+{% endif %}
+{% for checked, value in radio %}
+    <td><input
+            type="radio"
+            name="{{ rushee.id }}"
+            {% if checked %}checked="checked"{% endif %}
+            hx-post="{{ request.path }}"
+            hx-target="#txt{{ rushee.id }}"
+            hx-trigger="click"
+            hx-vals='{
+                                "id": {{ rushee.id }},
+                                "value": "{{ value }}"
+                            }'
+    ></td>
+{% endfor %}
