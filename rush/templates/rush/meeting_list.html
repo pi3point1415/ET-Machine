@@ -1,36 +1,156 @@
 {% extends "base_generic.html" %}
 
+{% block head %}
+    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"
+            integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.32.0/js/jquery.tablesorter.min.js"
+            integrity="sha512-O/JP2r8BG27p5NOtVhwqsSokAwEP5RwYgvEzU9G6AfNjLYqyt2QT8jqU1XrXCiezS50Qp1i3ZtCQWkHZIRulGA=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.32.0/css/theme.bootstrap_4.min.css"
+          integrity="sha512-2C6AmJKgt4B+bQc08/TwUeFKkq8CsBNlTaNcNgUmsDJSU1Fg+R6azDbho+ZzuxEkJnCjLZQMozSq3y97ZmgwjA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+{% endblock %}
+
 {% block content %}
-    <table class="table-fancy">
+    <table id="table" class="tablesorter-bootstrap table table-bordered table-striped">
+        <thead>
         <tr>
-        <th>Name</th>
+            <th>Name</th>
             <th>Status</th>
-            <th style="border-left: 1px solid;">B</th>
+            <th style="border-right: 1px solid;">Bidder</th>
+            <th>B</th>
             <th>N</th>
             <th>W</th>
             <th>F</th>
             <th style="border-right: 1px solid;">Total</th>
             {% for active in actives %}
-                <th style="line-height: 1">
-                {% for i in active %}
-                    {{ i }} <br>
-                {% endfor %}
-                </th>
+{#                <th style="line-height: 1">#}
+{#                    {% for i in active %}#}
+{#                        {{ i }} <br>#}
+{#                    {% endfor %}#}
+{#                </th>#}
+                <th>{{ active }}</th>
             {% endfor %}
         </tr>
+        </thead>
+        <tbody>
         {% for rushee, row in rushees %}
             <tr>
-                <td>{{ rushee }}</td>
-                <td>{{ rushee.get_status_display }}</td>
-                <td style="border-left: 1px solid;">{{ rushee.b }}</td>
-                <td>{{ rushee.n }}</td>
-                <td>{{ rushee.w }}</td>
-                <td>{{ rushee.f }}</td>
-                <td style="border-right: 1px solid;">{{ rushee.filings }}</td>
+                <td><a href="{{ rushee.get_absolute_url }}">{{ rushee }}</a></td>
+                {% include 'rush/meeting_list_status_cell.html' %}
+                <td style="border-right: 1px solid;">
+                    <form>
+                        {% csrf_token %}
+                        <select name="{{ rushee.id }}" autocomplete="off"
+                                hx-post="{{ request.path }}"
+                                hx-swap="none"
+                                hx-vals='"bidder": "bidder"'
+                        >
+                            <option value="None">None</option>
+                            {% for active in actives %}
+                                <option value="{{ active.id }}" {% if active == rushee.bidder %}selected="selected"{% endif %}>{{ active }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </td>
+                <td
+                        {% if rushee.flush %}
+                            class="bg-danger"
+                        {% elif rushee.weak %}
+                            class="bg-warning"
+                        {% elif rushee.autobid %}
+                            class="bg-success"
+                        {% endif %}>{{ rushee.b }}</td>
+                <td
+                        {% if rushee.flush %}
+                            class="bg-danger"
+                        {% elif rushee.weak %}
+                            class="bg-warning"
+                        {% elif rushee.autobid %}
+                            class="bg-success"
+                        {% endif %}>{{ rushee.n }}</td>
+                <td
+                        {% if rushee.flush %}
+                            class="bg-danger"
+                        {% elif rushee.weak %}
+                            class="bg-warning"
+                        {% elif rushee.autobid %}
+                            class="bg-success"
+                        {% endif %}>{{ rushee.w }}</td>
+                <td
+                        {% if rushee.flush %}
+                            class="bg-danger"
+                        {% elif rushee.weak %}
+                            class="bg-warning"
+                        {% elif rushee.autobid %}
+                            class="bg-success"
+                        {% endif %}>{{ rushee.f }}</td>
+                <td
+                        {% if rushee.flush %}
+                            class="bg-danger"
+                        {% elif rushee.weak %}
+                            class="bg-warning"
+                        {% elif rushee.autobid %}
+                            class="bg-success"
+                        {% endif %} style="border-right: 1px solid;">{{ rushee.filings }}</td>
                 {% for i in row %}
                     <td>{{ i|upper }}</td>
                 {% endfor %}
             </tr>
         {% endfor %}
+        </tbody>
     </table>
+{% endblock %}
+
+{% block foot %}
+    <style>
+        th {
+            position: sticky;
+            top: 0;
+        }
+
+        td a {
+            display: block;
+        }
+    </style>
+    <script type="text/javascript">
+        statusTypes = [
+            {% for i in statuses %}
+                "{{ i }}",
+            {% endfor %}
+        ];
+
+        $.tablesorter.addParser({
+            id: 'statuses',
+            is: function (s) {
+                return false;
+            },
+            format: function (s) {
+                // Add 1 so that a non-match returns 0 instead of -1, which sorts between 0 and 1
+                return statusTypes.indexOf(s) + 1;
+            }
+        })
+
+        $(function () {
+            $("#table").tablesorter({
+                sortList: [[1, 0], [0, 0]],
+                emptyTo: 'emptyMin',
+                textExtraction: function (node) {
+                    // Check if option selected is set
+                    if ($(node).find('option:selected').text() != "") {
+                        return $(node).find('option:selected').text();
+                    }
+                    // Otherwise return text
+                    else return $(node).text();
+                },
+                headers: {
+                    1: {
+                        sorter: 'statuses',
+                        sortInitialOrder: 'asc'
+                    }
+                }
+            });
+        });
+    </script>
 {% endblock %}

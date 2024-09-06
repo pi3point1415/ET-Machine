@@ -1,5 +1,3 @@
-from json import loads
-
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.admin.views.decorators import staff_member_required
@@ -265,6 +263,56 @@ def PasswordResetView(request):
 @login_required
 @staff_member_required(login_url=reverse_lazy('login'))
 def MeetingListView(request):
+    statuses = [i[1] for i in Rushee.STATUSES]
+
+    if request.method == 'POST':
+        rushee_id = -1
+
+        if 'status' in request.POST:
+            for i in request.POST.keys():
+                if i != 'csrfmiddlewaretoken':
+                    rushee_id = i
+                    break
+
+            status = request.POST[rushee_id]
+
+            for i in Rushee.STATUSES:
+                if i[1] == status:
+                    status = i[0]
+                    break
+
+            rushee = get_object_or_404(Rushee, pk=rushee_id)
+
+            rushee.status = status
+            rushee.save()
+
+            context = {
+                'rushee': rushee,
+                'status': request.POST[rushee_id],
+                'statuses': statuses,
+            }
+
+            return render(request, 'rush/meeting_list_status_cell.html', context)
+        elif 'bidder' in request.POST:
+            rushee_id = -1
+
+            for i in request.POST.keys():
+                if i != 'csrfmiddlewaretoken':
+                    rushee_id = i
+                    break
+
+            active = request.POST[rushee_id]
+            if active == 'None':
+                active = None
+            else:
+                User = get_user_model()
+                active = User.objects.get(pk=active)
+
+            rushee = Rushee.objects.get(pk=rushee_id)
+            rushee.bidder = active
+            rushee.save()
+            return HttpResponse()
+
     rushees = Rushee.objects.all()
     User = get_user_model()
     actives = User.objects.all()
@@ -280,11 +328,10 @@ def MeetingListView(request):
                 row.append('')
         rows.append(row)
 
-    actives = [list(i.username.upper()) for i in actives]
-
     context = {
         'rushees': zip(rushees, rows),
         'actives': actives,
+        'statuses': statuses,
     }
 
     return render(request, 'rush/meeting_list.html', context=context)

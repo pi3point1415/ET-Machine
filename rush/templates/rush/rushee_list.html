@@ -33,7 +33,15 @@
         {% for i in rushees %}
             <tr>
                 <td><a href="{{ i.get_absolute_url }}">{{ i.name }}</a></td>
-                <td>{% if i.get_status_display == 'None' %}{% else %}{{ i.get_status_display }}{% endif %}</td>
+                <td
+                    {% if i.status == 'a' %}
+                        class="bg-warning"
+                    {% elif i.status == 'b' %}
+                        class="bg-success"
+                    {% elif i.status == 'p' %}
+                        class="bg-info"
+                    {% endif %}
+                >{% if i.get_status_display == 'None' %}{% else %}{{ i.get_status_display }}{% endif %}</td>
                 <td>{{ i.bidder|default_if_none:'' }}</td>
                 <td>{{ i.dorm|default_if_none:'' }}</td>
                 <td>{{ i.email|default_if_none:'' }}</td>
@@ -41,7 +49,15 @@
                 <td>{{ i.phone|default_if_none:'' }}</td>
                 <td>{{ i.last_contact|default_if_none:'' }}</td>
                 {% if user.is_staff %}
-                <td>{{ i.short_filings_desc }}</td>
+                <td
+                    {% if i.flush %}
+                        class="bg-danger"
+                    {% elif i.weak %}
+                        class="bg-warning"
+                    {% elif i.autobid %}
+                        class="bg-success"
+                    {% endif %}
+                >{{ i.short_filings_desc }}</td>
                 {% endif %}
             </tr>
         {% endfor %}

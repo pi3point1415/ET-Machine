@@ -1,11 +1,20 @@
 <td><a href="{{ rushee.get_absolute_url }}">{{ rushee.name }}</a></td>
 <td>{% if filing == 'No Filing' %}{% else %}{{ filing }}{% endif %}</td>
 {% if user.is_staff %}
-    <td>{{ rushee.short_filings_desc }}</td>
+    <td
+        {% if rushee.flush %}
+            class="bg-danger"
+        {% elif rushee.weak %}
+            class="bg-warning"
+        {% elif rushee.autobid %}
+            class="bg-success"
+        {% endif %}
+    >{{ rushee.short_filings_desc }}</td>
 {% endif %}
 {% for checked, value in radio %}
-    <td><input
+    <td style="text-align: center"><input
             type="radio"
+            autocomplete="off"
             name="{{ rushee.id }}"
             {% if checked %}checked="checked"{% endif %}
             hx-post="{{ request.path }}"
