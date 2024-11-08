@@ -1,0 +1,115 @@
+<tr id="row_dialog_delete_{{ i.id }}">
+    {% load static %}
+    <td><a href="{{ i.get_absolute_url }}"><img src="{% static 'icons/link.svg' %}" style="width:1em;height:1em"></a>
+    </td>
+    <td><input
+            type="text"
+            hx-post="{{ request.path }}"
+            hx-swap="none"
+            hx-vals='"name": "{{ i.id }}"'
+            name="name_{{ i.id }}"
+            value="{{ i.name }}"></td>
+    {% if user.is_staff %}
+        {% include 'rush/rushee_list_status_cell.html' %}
+        <td><select
+                name="{{ i.id }}"
+                autocomplete="off"
+                hx-post="{{ request.path }}"
+                hx-swap="none"
+                hx-vals='"bidder": "{{ i.id }}"'>
+            <option value="0"></option>
+            {% for active in actives %}
+                <option value="{{ active.id }}"
+                        {% if active == i.bidder %}selected="selected"{% endif %}>{{ active }}</option>
+            {% endfor %}
+        </select></td>
+    {% else %}
+        <td style="background:#{{ i.status.hex }};">{{ i.status }}</td>
+        <td>{{ i.bidder|default_if_none:'' }}</td>
+    {% endif %}
+    <td><input
+            type="text"
+            hx-post="{{ request.path }}"
+            hx-swap="none"
+            hx-vals='"pronouns": "{{ i.id }}"'
+            name="pronouns_{{ i.id }}"
+            value="{{ i.pronouns|default_if_none:'' }}"></td>
+    <td><input
+            type="text"
+            hx-post="{{ request.path }}"
+            hx-swap="none"
+            hx-vals='"dorm": "{{ i.id }}"'
+            name="dorm_{{ i.id }}"
+            value="{{ i.dorm|default_if_none:'' }}"></td>
+    <td><input
+            type="text"
+            hx-post="{{ request.path }}"
+            hx-swap="none"
+            hx-vals='"email": "{{ i.id }}"'
+            name="email_{{ i.id }}"
+            value="{{ i.email|default_if_none:'' }}"></td>
+    <td><input
+            type="text"
+            hx-post="{{ request.path }}"
+            hx-swap="none"
+            hx-vals='"discord": "{{ i.id }}"'
+            name="discord_{{ i.id }}"
+            value="{{ i.discord|default_if_none:'' }}"></td>
+    <td><input
+            type="text"
+            hx-post="{{ request.path }}"
+            hx-swap="none"
+            hx-vals='"phone": "{{ i.id }}"'
+            name="phone_{{ i.id }}"
+            value="{{ i.phone|default_if_none:'' }}"></td>
+    <td><input
+            type="text"
+            hx-post="{{ request.path }}"
+            hx-swap="none"
+            hx-vals='"last_contact": "{{ i.id }}"'
+            hx-trigger="change"
+            onchange="htmx.trigger(this, 'change')"
+            name="last_contact_{{ i.id }}"
+            class="date"
+            value="{{ i.last_contact|default_if_none:''|date:'m/d/Y' }}"></td>
+    {% if user.is_staff %}
+        <td
+            {% if i.flush %}
+                class="bg-danger"
+            {% elif i.weak %}
+                class="bg-warning"
+            {% elif i.autobid %}
+                class="bg-success"
+            {% endif %}
+        >{{ i.short_filings_desc }}</td>
+    {% endif %}
+    <td>
+        <button class="icon" onclick="$('#dialog_{{ i.id }}').dialog('open')" title="{{ i.comments|default_if_none:'' }}">
+            <img src="
+                    {% if i.comments|default_if_none:'' != '' %}{% static 'icons/comment-filled.svg' %}{% else %}{% static 'icons/comment.svg' %}{% endif %}"
+                 style="width:1em;height:1em">
+        </button>
+
+
+        <div class="dialog" id="dialog_{{ i.id }}" title="{{ i }}">
+              <textarea
+                      type="text"
+                      hx-post="{{ request.path }}"
+                      hx-swap="none"
+                      hx-vals='"comments": "{{ i.id }}"'
+                      name="comments_{{ i.id }}"
+              >{{ i.comments|default_if_none:'' }}</textarea>
+        </div>
+    </td>
+{% if user.is_staff %}
+    <td>
+        <button class="icon" onclick="$('#dialog_delete_{{ i.id }}').dialog('open')">
+            <img src={% static 'icons/x.svg' %} style="width:1em;height:1em">
+        </button>
+
+        <div class="dialog_delete" id="dialog_delete_{{ i.id }}" title="Delete {{ i.name }}?">
+            <p>Are you sure you want to permanently delete {{ i.name }}?</p>
+        </div>
+    </td>
+{% endif %}
+</tr>

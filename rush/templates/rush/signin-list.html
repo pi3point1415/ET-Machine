@@ -4,15 +4,19 @@
     <h1>Sign-in List</h1>
 
     {% if signins %}
-        <table class="table-fancy">
+        <table class="table table-sm table-bordered table-striped">
         <tr>
+            <th>Timestamp</th>
             <th>Name</th>
             <th>Email</th>
-            <th>Timestamp</th>
             <th>Heard from</th>
+            <th>Create</th>
         </tr>
             {% for i in signins %}
                 <tr>
+                    <td>
+                        {{ i.timestamp|date:'m/d H:m' }}
+                    </td>
                     <td>
                         {{ i.name }}
                     </td>
@@ -20,15 +24,16 @@
                         {{ i.email }}
                     </td>
                     <td>
-                        {{ i.timestamp }}
+                        {{ i.heard }}
                     </td>
                     <td>
-                        {{ i.heard }}
+                        <input type="button" hx-post="{{ request.path }}" hx-swap="none" hx-vals='"create": "{{ i.pk }}"'
+                               value="Create Rushee">
                     </td>
                 </tr>
             {% endfor %}
         </table>
-
+        <a href="{% url 'export-signins' %}">Export to CSV</a>`
     {% else %}
         <p>There are no sign-ins in the system.</p>
     {% endif %}

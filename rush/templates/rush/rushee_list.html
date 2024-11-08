@@ -1,8 +1,16 @@
 {% extends "base_generic.html" %}
 
 {% block head %}
-    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"
-            integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+            integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.3/themes/base/jquery-ui.min.css"
+          integrity="sha512-8PjjnSP8Bw/WNPxF6wkklW6qlQJdWJc/3w/ZQPvZ/1bjVDkrrSqLe9mfPYrMxtnzsXFPc434+u4FHLnLjXTSsg=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.3/jquery-ui.min.js"
+            integrity="sha512-Ww1y9OuQ2kehgVWSD/3nhgfrb424O3802QYP/A5gPXoM4+rRjiKrjHdGxQKrMGQykmsJ/86oGdHszfcVgUr4hA=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.32.0/js/jquery.tablesorter.min.js"
             integrity="sha512-O/JP2r8BG27p5NOtVhwqsSokAwEP5RwYgvEzU9G6AfNjLYqyt2QT8jqU1XrXCiezS50Qp1i3ZtCQWkHZIRulGA=="
             crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -13,84 +21,185 @@
 {% endblock %}
 
 {% block content %}
-    <table id="table" class="tablesorter-bootstrap table table-bordered table-striped">
+    <table id="table" class="tablesorter-bootstrap table-sm table-bordered table-striped">
         <thead class="thead-light">
-        <tr>
-            <th>Name</th>
-            <th>Bid Status</th>
-            <th>Bidder</th>
-            <th>Dorm</th>
-            <th>Email</th>
-            <th>Discord</th>
-            <th>Phone</th>
-            <th>Last Contact</th>
+        <tr class="sticky">
+            <th class="sorter-false"></th>
+            <th class="input">Name</th>
+            <th class="dropdown">Bid Status</th>
+            <th class="dropdown">Bidder</th>
+            <th class="input">Pronouns</th>
+            <th class="input">Dorm</th>
+            <th class="input">Email</th>
+            <th class="input">Discord</th>
+            <th class="input">Phone</th>
+            <th class="input date">Last Contact</th>
             {% if user.is_staff %}
             <th>Filing Status</th>
+            {% endif %}
+            <th class="sorter-false"></th>
+            {% if user.is_staff %}
+            <th class="sorter-false"></th>
             {% endif %}
         </tr>
         </thead>
         <tbody>
         {% for i in rushees %}
-            <tr>
-                <td><a href="{{ i.get_absolute_url }}">{{ i.name }}</a></td>
-                <td
-                    {% if i.status == 'a' %}
-                        class="bg-warning"
-                    {% elif i.status == 'b' %}
-                        class="bg-success"
-                    {% elif i.status == 'p' %}
-                        class="bg-info"
-                    {% endif %}
-                >{% if i.get_status_display == 'None' %}{% else %}{{ i.get_status_display }}{% endif %}</td>
-                <td>{{ i.bidder|default_if_none:'' }}</td>
-                <td>{{ i.dorm|default_if_none:'' }}</td>
-                <td>{{ i.email|default_if_none:'' }}</td>
-                <td>{{ i.discord|default_if_none:'' }}</td>
-                <td>{{ i.phone|default_if_none:'' }}</td>
-                <td>{{ i.last_contact|default_if_none:'' }}</td>
-                {% if user.is_staff %}
-                <td
-                    {% if i.flush %}
-                        class="bg-danger"
-                    {% elif i.weak %}
-                        class="bg-warning"
-                    {% elif i.autobid %}
-                        class="bg-success"
-                    {% endif %}
-                >{{ i.short_filings_desc }}</td>
-                {% endif %}
-            </tr>
+            {% include 'rush/rushee_list_row.html' %}
         {% endfor %}
         </tbody>
     </table>
-
-    <form action="" method="post">
-        {% csrf_token %}
-        {{ form.non_field_errors }}
-        {{ form.rushees.errors }}
-        {{ form.rushees.label_tag }}
-        <br/>
-        {{ form.rushees }}
-        <br/>
-        <input type="submit" value="Submit">
-    </form>
+    <input class="ui-button ui-corner-all"
+           type="button"
+           value="Add new"
+           hx-target="table"
+           hx-swap="beforeend"
+           hx-post="{{ request.path }}"
+           hx-vals='"add": "add"'
+           hx-on::after-request="update()"
+    >
 {% endblock %}
 
 {% block foot %}
     <style>
-    th {
-        position: sticky;
-        top: 0;
-    }
-    td a {
-        display: block;
-    }
+        .sticky th {
+            position: sticky;
+            top: -11px;
+        }
+
+        td a {
+            display: block;
+        }
+
+        td input {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            border: none;
+            background-color: transparent;
+            display: inline-block;
+        }
+
+        button.icon {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            border: none;
+            background-color: transparent;
+            display: inline-block;
+        }
+
+        th {
+            white-space: nowrap !important;
+        }
+
+        td {
+            white-space: nowrap;
+        }
+
+        td:has(> select) {
+            padding: 0 !important;
+        }
+
+        .ui-dialog-content textarea {
+            width: 100%;
+            height: calc(100% - 0.5em);
+            resize: none;
+            border: none;
+            min-height: 5em;
+        }
+
+        .ui-dialog-content {
+            padding-left: 0.5em !important;
+            padding-right: 0.5em !important;
+        }
+
+        td select {
+            background: transparent;
+            border: 0;
+            display: block;
+            width: 100%;
+            height: 100%;
+            padding: 0.3rem;
+        }
+
+        .dialog, .dialog_delete {
+            display: none;
+        }
+
     </style>
     <script type="text/javascript">
+        statusTypes = [
+            {% for i in statuses %}
+                "{{ i }}",
+            {% endfor %}
+        ];
+
+        $.tablesorter.addParser({
+            id: 'statuses',
+            is: function (s) {
+                return false;
+            },
+            format: function (s) {
+                // Add 1 so that a non-match returns 0 instead of -1, which sorts between 0 and 1
+                return statusTypes.indexOf(s) + 1;
+            }
+        })
+
+        let update = function () {
+            $( document ).tooltip();
+
+            $(".date").datepicker();
+
+            $(".dialog").dialog({
+                autoOpen: false,
+                width: '25%',
+                height: 'auto'
+            });
+
+            $(".dialog_delete").dialog({
+                dialogClass: "no-close",
+                autoOpen: false,
+                resizable: false,
+                height: "auto",
+                width: "auto",
+                modal: true,
+                buttons: {
+                    "Delete": function () {
+                        let id = $(this).attr('id');
+                        $.ajax({
+                            url: "{{ request.path }}",
+                            method: "POST",
+                            headers: {'X-CSRFToken': getToken('csrftoken')},
+                            mode: 'same-origin',
+                            data: {delete: $(this).attr('id')},
+                        });
+                        $("#row_" + id).remove();
+                        $(this).dialog("close");
+                    },
+                    Cancel: function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        }
+
         $(function () {
+            update();
+
             $("#table").tablesorter({
-                sortList: [[1,0], [0,0]],
+                sortList: [[2, 0], [1, 0]],
                 emptyTo: 'emptyMin',
+                textExtraction: {
+                    '.dropdown': function (node) { return $(node).find('option:selected').text(); },
+                    '.input': function (node) { return $(node).find('input').val(); },
+                },
+                headers: {
+                    2: {
+                        sorter: 'statuses',
+                        sortInitialOrder: 'asc'
+                    }
+                }
             });
         });
     </script>

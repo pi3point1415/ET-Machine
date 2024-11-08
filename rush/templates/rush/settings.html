@@ -1,50 +1,103 @@
 {% extends "base_generic.html" %}
 
+{% block head %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/mdbassit/Coloris@latest/dist/coloris.min.css"/>
+    <script src="https://cdn.jsdelivr.net/gh/mdbassit/Coloris@latest/dist/coloris.min.js"></script>
+    <style>
+
+        .square .clr-field button {
+            width: 22px;
+            height: 22px;
+            left: 5px;
+            right: auto;
+            border-radius: 5px;
+        }
+
+        .square {
+            margin-right: -34px;
+        }
+
+        .square .clr-field input {
+            padding-left: 36px;
+        }
+
+    </style>
+{% endblock %}
+
 {% block content %}
     <p><strong>Autobid conditions:</strong></p>
     <form action="" method="POST">
-    {% csrf_token %}
-    <table>
-        <tr>
-            <td>At least</td>
-            <td>{{ settings_form.b }}</td>
-            <td>bids</td>
-        </tr>
-        <tr>
-            <td>At least</td>
-            <td>{{ settings_form.n }}</td>
-            <td>positive filings</td>
-        </tr>
-        <tr>
-            <td>At most</td>
-            <td>{{ settings_form.w }}</td>
-            <td>weak filings</td>
-        </tr>
-        <tr>
-            <td>At most</td>
-            <td>{{ settings_form.f }}</td>
-            <td>flush filings</td>
-        </tr>
-    </table>
-    <input type="submit" value="Update">
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td>At least</td>
+                <td>{{ settings_form.b }}</td>
+                <td>bids</td>
+            </tr>
+            <tr>
+                <td>At least</td>
+                <td>{{ settings_form.n }}</td>
+                <td>positive filings</td>
+            </tr>
+            <tr>
+                <td>At most</td>
+                <td>{{ settings_form.w }}</td>
+                <td>weak filings</td>
+            </tr>
+            <tr>
+                <td>At most</td>
+                <td>{{ settings_form.f }}</td>
+                <td>flush filings</td>
+            </tr>
+        </table>
+        <input type="submit" value="Update">
     </form>
     <br/>
+
+    <p><strong>Statuses</strong></p>
+    {% include 'rush/settings_statuses.html' %}
+    <br/>
+
     <p><strong>Export</strong></p>
-    <p><a href="{% url 'export' %}">Export rushee data to CSV</a></p>
+    <p><a href="{% url 'export-rushees' %}">Export rushee data to CSV</a></p>
     <p><strong>Delete</strong></p>
     <p>Note that deleting rushees will also delete filings</p>
     <form action="" method="POST">
-    {% csrf_token %}
-    <table>
-        <tr>
-            <td>Delete All Filings: </td>
-            <td>{{ delete_form.filings }}</td>
-        </tr>
-        <tr>
-            <td style="padding-right: 10px">Delete All Rushees: </td>
-            <td>{{ delete_form.rushees }}</td>
-        </tr>
-    </table>
-    <input type="submit" value="Delete">
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td>Delete All Filings:</td>
+                <td>{{ delete_form.filings }}</td>
+            </tr>
+            <tr>
+                <td style="padding-right: 10px">Delete All Rushees:</td>
+                <td>{{ delete_form.rushees }}</td>
+            </tr>
+            <tr>
+                <td>Delete All Sign-ins:</td>
+                <td>{{ delete_form.signins }}</td>
+            </tr>
+        </table>
+        <input type="submit" value="Delete">
     </form>
+{% endblock %}
+
+{% block foot %}
+    <script>
+        function initializeColoris() {
+            const colorisElements = document.querySelectorAll('[data-coloris]');
+            colorisElements.forEach(element => {
+                Coloris.wrap(element);
+                Coloris.bind(element);
+            });
+        }
+
+        Coloris({
+            alpha: false,
+        })
+
+        document.addEventListener('htmx:afterRequest', function(evt) {
+            initializeColoris()
+        });
+    </script>
 {% endblock %}

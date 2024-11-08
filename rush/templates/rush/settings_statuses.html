@@ -1,0 +1,49 @@
+<div id="statuses">
+    <table>
+        <tr>
+            <td>Status</td>
+            <td>Color</td>
+        </tr>
+        {% for i in statuses %}
+            <tr>
+                <td>
+                    <form action="" method="POST">
+                        {% csrf_token %}
+                        <input
+                                type="text"
+                                name="{{ i.pk }}"
+                                hx-post="{{ request.path }}"
+                                hx-swap="none"
+                                hx-vals='"status_name": "status_name"'
+                                value="{{ i.name }}"
+                        >
+                    </form>
+                </td>
+                <td>
+                    <form action="" method="POST">
+                        {% csrf_token %}
+                        <div class="square">
+                            <input
+                                    type="text"
+                                    data-coloris
+                                    name="{{ i.pk }}"
+                                    hx-post="{{ request.path }}"
+                                    hx-swap="none"
+                                    hx-vals='"status_color": "status_color"'
+                                    value="#{{ i.hex }}"
+                                    style="width:85%;"
+                            >
+                        </div>
+                    </form>
+                </td>
+                <td>
+                    <input type="button" hx-post="{{ request.path }}" hx-target="#statuses" hx-swap="outerHTML" hx-vals='"status_delete": "{{ i.pk }}"'
+                           value="Remove">
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <input type="button" hx-post="{{ request.path }}" hx-target="#statuses" hx-swap="outerHTML" hx-vals='"status_new": "status_new"'
+           value="New Status">
+</div>

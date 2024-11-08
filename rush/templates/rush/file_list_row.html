@@ -2,27 +2,32 @@
 <td>{% if filing == 'No Filing' %}{% else %}{{ filing }}{% endif %}</td>
 {% if user.is_staff %}
     <td
-        {% if rushee.flush %}
-            class="bg-danger"
-        {% elif rushee.weak %}
-            class="bg-warning"
-        {% elif rushee.autobid %}
-            class="bg-success"
-        {% endif %}
+            {% if rushee.flush %}
+                class="bg-danger"
+            {% elif rushee.weak %}
+                class="bg-warning"
+            {% elif rushee.autobid %}
+                class="bg-success"
+            {% endif %}
     >{{ rushee.short_filings_desc }}</td>
 {% endif %}
 {% for checked, value in radio %}
-    <td style="text-align: center"><input
-            type="radio"
-            autocomplete="off"
-            name="{{ rushee.id }}"
-            {% if checked %}checked="checked"{% endif %}
-            hx-post="{{ request.path }}"
-            hx-target="#txt{{ rushee.id }}"
-            hx-trigger="click"
-            hx-vals='{
-                                "id": {{ rushee.id }},
-                                "value": "{{ value }}"
-                            }'
-    ></td>
+    <td style="text-align: center">
+        <label>
+            <input
+                type="radio"
+                autocomplete="off"
+                name="{{ rushee.id }}"
+                id="{{ rushee.id }}_{{ value }}"
+                {% if checked %}checked="checked"{% endif %}
+                hx-post="{{ request.path }}"
+                hx-target="#txt{{ rushee.id }}"
+                hx-trigger="click"
+                hx-vals='{
+                            "id": {{ rushee.id }},
+                            "value": "{{ value }}"
+                        }'
+            >
+        </label>
+    </td>
 {% endfor %}

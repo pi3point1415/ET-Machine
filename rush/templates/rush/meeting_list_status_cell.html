@@ -1,11 +1,4 @@
-<td id="td{{ rushee.id }}"
-        {% if rushee.status == 'a' %}
-    class="bg-warning"
-        {% elif rushee.status == 'b' %}
-    class="bg-success"
-        {% elif rushee.status == 'p' %}
-    class="bg-info"
-        {% endif %}>
+<td id="td{{ rushee.id }}" style="background:#{{ rushee.status.hex }};">
     <form>
         {% csrf_token %}
         <select name="{{ rushee.id }}" autocomplete="off"
@@ -14,8 +7,9 @@
                 hx-swap="outerHTML"
                 hx-vals='"status": "status"'
         >
+            <option>None</option>
             {% for status in statuses %}
-                <option {% if status == rushee.get_status_display %}selected="selected"{% endif %}>{{ status }}</option>
+                <option {% if status == rushee.status %}selected="selected"{% endif %}>{{ status }}</option>
             {% endfor %}
         </select>
     </form>

@@ -7,6 +7,18 @@ from django.contrib.auth.models import AbstractUser
 # Create your models here.
 
 
+class Status(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    color = models.IntegerField(null=True, blank=True)
+
+    @property
+    def hex(self):
+        return format(self.color,'06X')
+
+    def __str__(self):
+        return f'{self.name}'
+
+
 class Rushee(models.Model):
     STATUSES = (
         ('n', 'None'),
@@ -16,11 +28,12 @@ class Rushee(models.Model):
     )
 
     name = models.CharField(max_length=100)
+    pronouns = models.CharField(max_length=50, null=True, blank=True)
     dorm = models.CharField(max_length=50, null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
     discord = models.CharField(max_length=50, null=True, blank=True)
     phone = models.CharField(max_length=20, null=True, blank=True)
-    status = models.CharField(max_length=1, choices=STATUSES, default='None')
+    status = models.ForeignKey(Status, on_delete=models.SET_NULL, null=True, blank=True)
     bidder = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     last_contact = models.DateField(null=True, blank=True)
     comments = models.TextField(null=True, blank=True)

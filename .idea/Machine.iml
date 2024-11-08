@@ -16,11 +16,20 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.10 (Machine)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.11 (ET-Machine)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="jquery-ui" level="application" />
     <orderEntry type="library" name="jquery-3.7.1" level="application" />
     <orderEntry type="library" name="jquery.tablesorter" level="application" />
+    <orderEntry type="library" name="coloris" level="application" />
+    <orderEntry type="library" name="jquery-3.7.1.slim" level="application" />
+    <orderEntry type="library" name="jquery.tablesorter" level="application" />
+    <orderEntry type="library" name="jquery-ui" level="application" />
+    <orderEntry type="library" name="jquery-3.7.1" level="application" />
+    <orderEntry type="library" name="jqueryui" level="application" />
+    <orderEntry type="library" name="bootstrap" level="application" />
+    <orderEntry type="library" name="htmx" level="application" />
+    <orderEntry type="library" name="jquery" level="application" />
   </component>
   <component name="TemplatesService">
     <option name="TEMPLATE_CONFIGURATION" value="Django" />

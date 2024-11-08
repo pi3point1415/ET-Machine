@@ -5,12 +5,18 @@
 
     <form action="" method="post">
         {% csrf_token %}
-        <table class="table-fancy">
+        <table class="table table-sm table-bordered table-striped">
             <tr>
                 <th>Active</th>
                 <th>Rush Chair</th>
                 <th>Delete</th>
                 <th>Reset Password</th>
+            </tr>
+            <tr>
+                <th></th>
+                <th><input type="checkbox" onClick="toggle(this, 'Staff')"/> Toggle All<br/></th>
+                <th><input type="checkbox" onClick="toggle(this, 'Delete')"/> Toggle All<br/></th>
+                <th><input type="checkbox" onClick="toggle(this, 'Password')"/> Toggle All<br/></th>
             </tr>
             <tr>
                 {% for field in modify_actives_form %}
@@ -28,4 +34,17 @@
         <br/>
         <input type="submit" value="Submit">
     </form>
+{% endblock %}
+
+{% block foot %}
+    <script>
+        function toggle(source, type) {
+            let checkboxes = document.querySelectorAll(`[name$="${type}"]`);
+            for (let i = 0, n = checkboxes.length; i < n; i++) {
+                if (!checkboxes[i].disabled) {
+                    checkboxes[i].checked = source.checked;
+                }
+            }
+        }
+    </script>
 {% endblock %}

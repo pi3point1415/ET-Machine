@@ -42,7 +42,7 @@ class AddRusheesForm(forms.Form):
 class ModifyRusheeForm(forms.ModelForm):
     class Meta:
         model = Rushee
-        fields = ['name', 'status', 'bidder', 'dorm', 'email', 'discord', 'phone', 'last_contact', 'comments']
+        fields = ['name', 'status', 'bidder', 'pronouns', 'dorm', 'email', 'discord', 'phone', 'last_contact', 'comments']
 
 
 # Form for modifying autobid settings
@@ -57,6 +57,7 @@ class SettingsForm(forms.Form):
 class DeleteForm(forms.Form):
     filings = forms.BooleanField(label="Delete All Filings", required=False)
     rushees = forms.BooleanField(label="Delete All Rushees", required=False)
+    signins = forms.BooleanField(label="Delete All Sign-ins", required=False)
 
 
 # Form for filing as a specific user

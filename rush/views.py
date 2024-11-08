@@ -6,8 +6,10 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.forms import PasswordChangeForm
 from django.urls import reverse_lazy
 
-from .models import Settings, Discord
+from .models import Settings, Discord, Status
 from .forms import *
+
+from datetime import date
 
 import csv
 
@@ -76,26 +78,83 @@ def RusheeListView(request):
     # Get all rushees
     rushee_list = Rushee.objects.all()
 
+    statuses = Status.objects.all()
+
     if request.method == 'POST':
-        # If form submitted
-        form = AddRusheesForm(request.POST)
+        for field in ['name', 'pronouns', 'dorm', 'email', 'discord', 'phone', 'last_contact', 'comments']:
+            if field in request.POST:
+                rushee_id = request.POST[field]
+                value = request.POST[f'{field}_{rushee_id}']
+                if field == 'last_contact' and value != '':
+                    m, d, y = value.split('/')
+                    m, d, y = int(m), int(d), int(y)
+                    value = date(y, m, d)
 
-        if form.is_valid():
-            # Get rushees from submitted textarea
-            rushees = form.cleaned_data['rushees']
-            for i in rushees.splitlines():
-                # Don't create a rushee with an identical name
-                if not Rushee.objects.filter(name__exact=i).exists():
-                    rushee = Rushee(name=i)
-                    rushee.save()
-                    pardinalink.run(lambda b: b.machine_new(i, rushee.id))
+                if value == '':
+                    value = None
 
-    # Use a blank form for adding rushees
-    form = AddRusheesForm()
+                rushee = get_object_or_404(Rushee, pk=rushee_id)
+                setattr(rushee, field, value)
+                rushee.save()
+
+        if 'status' in request.POST:
+            rushee_id = request.POST['status']
+            rushee = get_object_or_404(Rushee, pk=rushee_id)
+            status_id = request.POST[rushee_id]
+            if status_id == '0':
+                rushee.status = None
+            else:
+                status = get_object_or_404(Status, pk=status_id)
+                rushee.status = status
+            rushee.save()
+
+            context = {
+                'i': rushee,
+                'statuses': statuses
+            }
+
+            return render(request, 'rush/rushee_list_status_cell.html', context)
+
+        if 'bidder' in request.POST:
+            rushee_id = request.POST['bidder']
+            rushee = get_object_or_404(Rushee, pk=rushee_id)
+            active_id = request.POST[rushee_id]
+            if active_id == '0':
+                rushee.bidder = None
+            else:
+                User = get_user_model()
+                active = get_object_or_404(User, pk=active_id)
+                rushee.bidder = active
+            rushee.save()
+
+        if 'add' in request.POST:
+            rushee = Rushee(name=f'Rushee {Rushee.objects.count() + 1}')
+            rushee.save()
+            statuses = Status.objects.all()
+            User = get_user_model()
+            actives = User.objects.all()
+
+            context = {
+                'i': rushee,
+                'statuses': statuses,
+                'actives': actives,
+            }
+
+            return render(request, 'rush/rushee_list_row.html', context)
+
+        if 'delete' in request.POST:
+            rushee = request.POST['delete'][len('dialog_delete_'):]
+            rushee = Rushee.objects.get(pk=rushee)
+            rushee.delete()
+
+    User = get_user_model()
+    actives = User.objects.all()
+    actives = sorted(actives, key=lambda x: x.username.lower())
 
     context = {
         'rushees': rushee_list,
-        'form': form
+        'statuses': statuses,
+        'actives': actives,
     }
 
     return render(request, 'rush/rushee_list.html', context)
@@ -263,7 +322,7 @@ def PasswordResetView(request):
 @login_required
 @staff_member_required(login_url=reverse_lazy('login'))
 def MeetingListView(request):
-    statuses = [i[1] for i in Rushee.STATUSES]
+    statuses = Status.objects.all()
 
     if request.method == 'POST':
         rushee_id = -1
@@ -275,11 +334,11 @@ def MeetingListView(request):
                     break
 
             status = request.POST[rushee_id]
-
-            for i in Rushee.STATUSES:
-                if i[1] == status:
-                    status = i[0]
-                    break
+            status = Status.objects.filter(name=status)
+            if len(status) > 0:
+                status = status[0]
+            else:
+                status = None
 
             rushee = get_object_or_404(Rushee, pk=rushee_id)
 
@@ -343,7 +402,43 @@ def SettingsView(request):
     settings = Settings.objects.get(id=1)
     initial = {'b': settings.b, 'n': settings.n, 'w': settings.w, 'f': settings.f}
 
+    statuses = Status.objects.all()
+
     if request.method == 'POST':
+        if 'status_name' in request.POST:
+            for i in request.POST.keys():
+                if i != 'csrfmiddlewaretoken' and i != 'status_name':
+                    status_id = i
+                    name = request.POST[status_id]
+                    status = get_object_or_404(Status, pk=status_id)
+                    status.name = name
+                    status.save()
+                    break
+        elif 'status_color' in request.POST:
+            for i in request.POST.keys():
+                if i != 'csrfmiddlewaretoken' and i != 'status_name':
+                    status_id = i
+                    color = request.POST[status_id]
+                    status = get_object_or_404(Status, pk=status_id)
+                    status.color = int(color[1:], 16)
+                    status.save()
+                    break
+        elif 'status_new' in request.POST:
+            status = Status(name=f'Status {Status.objects.count() + 1}', color=16777215)
+            status.save()
+            context = {
+                'statuses': statuses
+            }
+            return render(request, 'rush/settings_statuses.html', context=context)
+        elif 'status_delete' in request.POST:
+            status = request.POST['status_delete']
+            status = get_object_or_404(Status, pk=status)
+            status.delete()
+            context = {
+                'statuses': statuses
+            }
+            return render(request, 'rush/settings_statuses.html', context=context)
+
         settings_form = SettingsForm(request.POST)
         delete_form = DeleteForm(request.POST)
         if settings_form.is_valid():
@@ -362,6 +457,10 @@ def SettingsView(request):
                 filings = Filing.objects.all()
                 for i in filings:
                     i.delete()
+            if delete_form.cleaned_data['signins']:
+                signins = Signin.objects.all()
+                for i in signins:
+                    i.delete()
         else:
             settings_form = SettingsForm(initial=initial)
     else:
@@ -372,20 +471,36 @@ def SettingsView(request):
     context = {
         'settings_form': settings_form,
         'delete_form': delete_form,
+        'statuses': statuses,
     }
     return render(request, 'rush/settings.html', context=context)
 
 
 @login_required
+@staff_member_required(login_url=reverse_lazy('login'))
 def RusheeCSV(request):
     response = HttpResponse(content_type='text/csv',
                             headers={"Content-Disposition": 'attachment; filename="rushees.csv"'},)
 
     writer = csv.writer(response)
     rushees = Rushee.objects.all()
-    writer.writerow(['Name', 'Status', 'Bidder', 'Dorm', 'Email', 'Discord', 'Phone', 'Comments'])
+    writer.writerow(['Name', 'Filing Status', 'Status', 'Bidder', 'Pronouns', 'Dorm', 'Email', 'Discord', 'Phone', 'Last Contact', 'Comments'])
     for i in rushees:
-        writer.writerow([i.name, i.get_status_display(), i.bidder, i.dorm, i.email, i.discord, i.phone, i.comments])
+        writer.writerow([i.name, i.short_filings_desc, i.status, i.bidder, i.pronouns, i.dorm, i.email, i.discord, i.phone, i.last_contact, i.comments])
+
+    return response
+
+
+@login_required
+def SigninCSV(request):
+    response = HttpResponse(content_type='text/csv',
+                            headers={"Content-Disposition": 'attachment; filename="signins.csv"'},)
+
+    writer = csv.writer(response)
+    signins = Signin.objects.all()
+    writer.writerow(['Timestamp', 'Name', 'Email', 'Heard From'])
+    for i in signins:
+        writer.writerow([i.timestamp, i.name, i.email, i.heard])
 
     return response
 
@@ -494,6 +609,15 @@ def SigninView(request):
 @login_required
 def SigninListView(request):
     signins = Signin.objects.all()
+
+    if request.method == 'POST':
+        if 'create' in request.POST:
+            signin = get_object_or_404(Signin, pk=request.POST['create'])
+            rushee = Rushee(name=signin.name, email=signin.email)
+            rushee.save()
+            response = HttpResponse()
+            response['HX-Redirect'] = rushee.get_absolute_url()
+            return response
 
     context = {
         'signins': signins

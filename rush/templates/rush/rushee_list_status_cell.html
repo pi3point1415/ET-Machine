@@ -1,0 +1,14 @@
+<td id='status_{{ i.id }}' style="background:#{{ i.status.hex }};">
+    <select
+        name="{{ i.id }}"
+        autocomplete="off"
+        hx-post="{{ request.path }}"
+        hx-target="#status_{{ i.id }}"
+        hx-swap="outerHTML"
+        hx-vals='"status": "{{ i.id }}"'>
+        <option value="0"></option>
+        {% for status in statuses %}
+            <option {% if status == i.status %}selected="selected"{% endif %} value="{{ status.id }}">{{ status }}</option>
+        {% endfor %}
+    </select>
+</td>
